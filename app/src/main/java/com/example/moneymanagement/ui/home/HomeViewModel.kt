@@ -2,7 +2,7 @@ package com.example.moneymanagement.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneymanagement.database.dao.TransactionHome
+import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.database.repository.TransactionRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,5 +30,5 @@ class HomeViewModel(
 }
 
 data class HomeUiState(
-    val transactionHomeList: List<TransactionHome> = emptyList()
+    val transactionHomeList: List<TransactionWithCateAndSubcategory> = emptyList()
 )

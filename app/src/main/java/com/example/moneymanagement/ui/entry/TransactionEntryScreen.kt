@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
 import com.example.moneymanagement.database.model.CategoryWithSubcategories
-import com.example.moneymanagement.database.model.Subcategory
+import com.example.moneymanagement.database.entity.Subcategory
 import com.example.moneymanagement.ui.navigation.NavigationDestination
 import com.example.moneymanagement.ui.theme.MoneyManagementTheme
 import kotlinx.coroutines.launch
@@ -45,38 +45,12 @@ object TransactionEntryDestination : NavigationDestination {
 }
 
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun TransactionEntryScreen(
     navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     viewModel: TransactionEntryScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)
-) {
-    val coroutineScope = rememberCoroutineScope()
-    val categoryState by viewModel.categoryState.collectAsState()
-    Ui(
-        onNavigateUp = onNavigateUp,
-        onSaveClick = {
-            coroutineScope.launch {
-                viewModel.saveTransaction()
-                navigateBack()
-            }
-        },
-        transactionEntry = viewModel.transactionEntryUiState.transactionEntry,
-        categoryList = categoryState.categoryWithSubcategoriesList,
-        buttonFulfilled = viewModel.transactionEntryUiState.isEntryValid,
-        onValueChange = viewModel::updateUiState,
-    )
-}
-
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
-@Composable
-fun Ui(
-    onNavigateUp: () -> Unit,
-    onSaveClick: () -> Unit,
-    transactionEntry: TransactionEntry,
-    categoryList: List<CategoryWithSubcategories>,
-    buttonFulfilled: Boolean,
-    onValueChange: (TransactionEntry) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -90,117 +64,143 @@ fun Ui(
             )
         }
     ) {
-        val focusManager = LocalFocusManager.current
+        val coroutineScope = rememberCoroutineScope()
+        val categoryState by viewModel.categoryState.collectAsState()
+        TransactionEntryBody(
+            onSaveClick = {
+                coroutineScope.launch {
+                    viewModel.saveTransaction()
+                    navigateBack()
+                }
+            },
+            transactionEntry = viewModel.transactionEntryUiState.transactionEntry,
+            categoryList = categoryState.categoryWithSubcategoriesList,
+            buttonFulfilled = viewModel.transactionEntryUiState.isEntryValid,
+            onValueChange = viewModel::updateUiState,
+        )
+    }
+}
 
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            transactionEntry.let {
-                Text(
-                    text = "Tên giao dịch",
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TextField(
-                    value = it.transactionName,
-                    onValueChange = { name -> onValueChange(transactionEntry.copy(transactionName = name)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    )
-                )
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@Composable
+fun TransactionEntryBody(
+    onSaveClick: () -> Unit,
+    transactionEntry: TransactionEntry,
+    categoryList: List<CategoryWithSubcategories>,
+    buttonFulfilled: Boolean,
+    onValueChange: (TransactionEntry) -> Unit,
+) {
 
-                Text(
-                    text = "Ngày giao dịch*",
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TextField(
-                    value = it.transactionDate,
-                    onValueChange = { date -> onValueChange(transactionEntry.copy(transactionDate = date)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    )
-                )
-
-                Text(
-                    text = "Số tiền*",
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TextField(
-                    value = it.transactionAmount.ifBlank { "" },
-                    onValueChange = { amount ->
-                        onValueChange(
-                            transactionEntry.copy(
-                                transactionAmount = amount
-                            )
-                        )
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                    )
-                )
-
-                Text(
-                    text = "Ghi chú",
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                TextField(
-                    value = it.transactionNote,
-                    onValueChange = { note -> onValueChange(transactionEntry.copy(transactionNote = note)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(
-                        onDone = { focusManager.clearFocus() }
-                    )
-                )
-            }
-
+    val focusManager = LocalFocusManager.current
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        transactionEntry.let {
             Text(
-                text = "Phân loại giao dịch*",
+                text = "Tên giao dịch",
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth()
             )
-
-            var subcategoriesFromCategory by remember { mutableStateOf(emptyList<Subcategory>()) }
-
-            CategorySelectionRow(
-                list = categoryList,
-                transactionEntry = transactionEntry,
-                onCategorySelect = onValueChange,
-                updateSubcategories = { newList -> subcategoriesFromCategory = newList }
-            )
-
-            SubcategoryDropdownMenu(
-                list = subcategoriesFromCategory,
-                transactionEntry = transactionEntry,
-                onSubcategorySelect = onValueChange,
-            )
-
-            //for testing
-            Text(text = "testing")
-            Text(text = transactionEntry.category.categoryId.toString())
-            transactionEntry.subcategory?.let { Text(text = it.subcategoryId.toString()) }
-
-            Button(
-                onClick = onSaveClick,
+            TextField(
+                value = it.transactionName,
+                onValueChange = { name -> onValueChange(transactionEntry.copy(transactionName = name)) },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = buttonFulfilled,
-            ) { Text(text = "Save") }
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                )
+            )
+
+            Text(
+                text = "Ngày giao dịch*",
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+            TextField(
+                value = it.transactionDate,
+                onValueChange = { date -> onValueChange(transactionEntry.copy(transactionDate = date)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                )
+            )
+
+            Text(
+                text = "Số tiền*",
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+            TextField(
+                value = it.transactionAmount.ifBlank { "" },
+                onValueChange = { amount ->
+                    onValueChange(
+                        transactionEntry.copy(
+                            transactionAmount = amount
+                        )
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                )
+            )
+
+            Text(
+                text = "Ghi chú",
+                textAlign = TextAlign.Start,
+                modifier = Modifier.fillMaxWidth()
+            )
+            TextField(
+                value = it.transactionNote,
+                onValueChange = { note -> onValueChange(transactionEntry.copy(transactionNote = note)) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() }
+                )
+            )
         }
+
+        Text(
+            text = "Phân loại giao dịch*",
+            textAlign = TextAlign.Start,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        var subcategoriesFromCategory by remember { mutableStateOf(emptyList<Subcategory>()) }
+
+        CategorySelectionRow(
+            list = categoryList,
+            transactionEntry = transactionEntry,
+            onCategorySelect = onValueChange,
+            updateSubcategories = { newList -> subcategoriesFromCategory = newList }
+        )
+
+        SubcategoryDropdownMenu(
+            list = subcategoriesFromCategory,
+            transactionEntry = transactionEntry,
+            onSubcategorySelect = onValueChange,
+        )
+
+        //for testing
+        Text(text = "testing")
+        Text(text = transactionEntry.category.categoryId.toString())
+        transactionEntry.subcategory?.let { Text(text = it.subcategoryId.toString()) }
+
+        Button(
+            onClick = onSaveClick,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = buttonFulfilled,
+        ) { Text(text = "Save") }
     }
+
 }
 
 @SuppressLint("DiscouragedApi")

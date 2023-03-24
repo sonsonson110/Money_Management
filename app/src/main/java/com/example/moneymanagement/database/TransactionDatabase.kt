@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.moneymanagement.database.dao.CategoryWithSubcategoriesDao
 import com.example.moneymanagement.database.dao.TransactionDao
-import com.example.moneymanagement.database.model.*
+import com.example.moneymanagement.database.entity.*
 
 @Database(
     entities = [Transaction::class, Category::class, Subcategory::class],

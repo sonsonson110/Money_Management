@@ -5,10 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneymanagement.database.model.Category
+import com.example.moneymanagement.database.entity.Category
 import com.example.moneymanagement.database.model.CategoryWithSubcategories
-import com.example.moneymanagement.database.model.Subcategory
-import com.example.moneymanagement.database.model.Transaction
+import com.example.moneymanagement.database.entity.Subcategory
+import com.example.moneymanagement.database.entity.Transaction
 import com.example.moneymanagement.database.repository.CategoryWithSubcategoriesRepository
 import com.example.moneymanagement.database.repository.TransactionRepository
 import kotlinx.coroutines.flow.SharingStarted

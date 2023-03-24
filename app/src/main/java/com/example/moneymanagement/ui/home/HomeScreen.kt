@@ -24,8 +24,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
-import com.example.moneymanagement.database.dao.TransactionHome
-import com.example.moneymanagement.database.model.Transaction
+import com.example.moneymanagement.database.entity.Transaction
+import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.ui.detail.groupAmount
 import com.example.moneymanagement.ui.navigation.NavigationDestination
 import com.example.moneymanagement.ui.theme.MoneyManagementTheme
@@ -59,16 +59,16 @@ fun HomeScreen(
 
 @Composable
 fun TransactionsList(
-    transactionHomeList: List<TransactionHome>,
+    transactionHomeList: List<TransactionWithCateAndSubcategory>,
     onItemClick: (Transaction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier.fillMaxWidth()) {
         itemsIndexed(
             items = transactionHomeList
-        ) { currentIndex, transactionHome ->
+        ) { currentIndex, transactionWithCateAndSubcategory ->
             TransactionsItem(
-                transactionHome = transactionHome,
+                transactionWithCateAndSubcategory = transactionWithCateAndSubcategory,
                 index = currentIndex,
                 onItemClick = onItemClick
             )
@@ -79,7 +79,7 @@ fun TransactionsList(
 @SuppressLint("DiscouragedApi")
 @Composable
 fun TransactionsItem(
-    transactionHome: TransactionHome,
+    transactionWithCateAndSubcategory: TransactionWithCateAndSubcategory,
     index: Int,
     onItemClick: (Transaction) -> Unit,
 ) {
@@ -90,16 +90,16 @@ fun TransactionsItem(
         modifier = Modifier
             .background(color = if (index % 2 == 0) Color.White else Color(211, 211, 211))
             .padding(8.dp)
-            .clickable { onItemClick(transactionHome.transaction) },
+            .clickable { onItemClick(transactionWithCateAndSubcategory.transaction) },
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (transactionHome.categoryIconName != "") {
+            if (transactionWithCateAndSubcategory.category.categoryIconName != "") {
                 Icon(
                     painter = painterResource(
                         id = context.resources.getIdentifier(
-                            transactionHome.categoryIconName,
+                            transactionWithCateAndSubcategory.category.categoryIconName,
                             "drawable",
                             context.packageName
                         )
@@ -116,7 +116,7 @@ fun TransactionsItem(
                 modifier = Modifier
                     .weight(1f)
             ) {
-                transactionHome.transaction.let {
+                transactionWithCateAndSubcategory.transaction.let {
                     Text(text = it.transactionName ?: "Chưa đề cập")
                     Text(text = it.transactionDate)
                 }
@@ -124,7 +124,7 @@ fun TransactionsItem(
         }
 
         Text(
-            text = transactionHome.transaction.transactionAmount.toString().groupAmount() + "đ",
+            text = transactionWithCateAndSubcategory.transaction.transactionAmount.toString().groupAmount() + "đ",
             modifier = Modifier.align(Alignment.BottomEnd)
         )
     }

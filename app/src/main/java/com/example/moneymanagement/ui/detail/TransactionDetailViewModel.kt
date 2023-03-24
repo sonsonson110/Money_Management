@@ -3,8 +3,8 @@ package com.example.moneymanagement.ui.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneymanagement.database.dao.TransactionDetail
-import com.example.moneymanagement.database.model.Transaction
+import com.example.moneymanagement.database.entity.Transaction
+import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.database.repository.TransactionRepository
 import kotlinx.coroutines.flow.*
 
@@ -26,12 +26,12 @@ class TransactionDetailViewModel(
             )
 
     suspend fun deleteTransaction() {
-        transactionRepository.deleteTransaction(uiState.value.transactionDetail.toTransaction())
+        transactionRepository.deleteTransaction(uiState.value.transactionWithCateAndSubcategory.toTransaction())
     }
 }
 
 data class TransactionDetailUiState(
-    val transactionDetail: TransactionDetail = TransactionDetail()
+    val transactionWithCateAndSubcategory: TransactionWithCateAndSubcategory = TransactionWithCateAndSubcategory()
 )
 
-fun TransactionDetail.toTransaction(): Transaction = this.transaction
+fun TransactionWithCateAndSubcategory.toTransaction(): Transaction = this.transaction

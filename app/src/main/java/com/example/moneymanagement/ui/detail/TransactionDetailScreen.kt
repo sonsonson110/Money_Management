@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
-import com.example.moneymanagement.database.dao.TransactionDetail
+import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.ui.navigation.NavigationDestination
 import com.example.moneymanagement.ui.theme.MoneyManagementTheme
 import kotlinx.coroutines.launch
@@ -61,7 +61,7 @@ fun TransactionDetailScreen(
             modifier = Modifier.padding(8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            DetailCards(transactionDetail = uiState.transactionDetail)
+            DetailCards(transactionWithCateAndSubcategory = uiState.transactionWithCateAndSubcategory)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -87,15 +87,15 @@ fun TransactionDetailScreen(
 }
 
 @Composable
-fun DetailCards(transactionDetail: TransactionDetail) {
+fun DetailCards(transactionWithCateAndSubcategory: TransactionWithCateAndSubcategory) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         DetailCard {
             //Big header with transaction amount
-            transactionDetail.let {
+            transactionWithCateAndSubcategory.let {
                 BigDetailHeader(
                     transactionName = it.transaction.transactionName ?: "Chưa đề cập",
                     transactionAmount = it.transaction.transactionAmount,
-                    iconName = it.categoryIconName
+                    iconName = it.category.categoryIconName
                 )
 
                 //Smaller transaction details
@@ -110,9 +110,9 @@ fun DetailCards(transactionDetail: TransactionDetail) {
         }
 
         DetailCard {
-            transactionDetail.let {
-                DetailRow(title = "Thể loại", content = it.categoryName)
-                DetailRow(title = "Thể loại con", content = it.subcategoryName ?: "Chưa đề cập")
+            transactionWithCateAndSubcategory.let {
+                DetailRow(title = "Thể loại", content = it.category.categoryName)
+                DetailRow(title = "Thể loại con", content = it.subcategory?.subcategoryName ?: "Chưa đề cập")
             }
         }
     }
@@ -198,7 +198,7 @@ fun DetailRow(
 fun DetailScreenPreview() {
     MoneyManagementTheme {
         DetailCards(
-            transactionDetail = TransactionDetail()
+            transactionWithCateAndSubcategory = TransactionWithCateAndSubcategory()
         )
     }
 }
