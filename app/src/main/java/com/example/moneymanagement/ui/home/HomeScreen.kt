@@ -38,7 +38,7 @@ object HomeDestination : NavigationDestination {
 @Composable
 fun HomeScreen(
     navigateToItemEntry: () -> Unit,
-    navigateToItemUpdate: (Int) -> Unit,
+    navigateToItemDetail: (Int) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val homeUiState by viewModel.homeUiState.collectAsState()
@@ -51,7 +51,7 @@ fun HomeScreen(
     ) { paddingValues ->
         TransactionsList(
             transactionHomeList = homeUiState.transactionHomeList,
-            onItemClick = { navigateToItemUpdate(it.transactionId) },
+            onItemClick = { navigateToItemDetail(it.transactionId) },
             modifier = Modifier.padding(paddingValues)
         )
     }

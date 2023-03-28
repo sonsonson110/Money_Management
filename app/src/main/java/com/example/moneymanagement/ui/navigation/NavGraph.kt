@@ -8,6 +8,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.moneymanagement.ui.detail.TransactionDetailDestination
 import com.example.moneymanagement.ui.detail.TransactionDetailScreen
+import com.example.moneymanagement.ui.edit.TransactionEditDestination
+import com.example.moneymanagement.ui.edit.TransactionEditScreen
 import com.example.moneymanagement.ui.entry.TransactionEntryDestination
 import com.example.moneymanagement.ui.entry.TransactionEntryScreen
 import com.example.moneymanagement.ui.home.HomeDestination
@@ -24,7 +26,7 @@ fun SetupNavGraph(
         composable(route = HomeDestination.route) {
             HomeScreen(
                 navigateToItemEntry = { navController.navigate(TransactionEntryDestination.route) },
-                navigateToItemUpdate = {
+                navigateToItemDetail = {
                     navController.navigate("${TransactionDetailDestination.route}/$it")
                 }
             )
@@ -40,15 +42,34 @@ fun SetupNavGraph(
             )
         )
         {
-            TransactionDetailScreen(onNavigateUp = { navController.navigateUp() })
+            TransactionDetailScreen(
+                onNavigateUp = { navController.navigateUp() },
+                navigateToTransactionUpdate = {
+                    navController.navigate(route = "${TransactionEditDestination.route}/$it")
+                }
+            )
         }
 
-
+        //Entry route
         composable(route = TransactionEntryDestination.route) {
             TransactionEntryScreen(
                 navigateBack = { navController.popBackStack() },
                 onNavigateUp = { navController.navigateUp() }
             )
+        }
+
+        //Edit route
+        composable(
+            route = TransactionEditDestination.routeWithArgs,
+            arguments = listOf(
+                navArgument(TransactionEditDestination.transactionIdArg) {
+                    type = NavType.IntType
+                }
+            )
+        ) {
+            TransactionEditScreen(
+                navigateBack = { navController.popBackStack() },
+                onNavigateUp = { navController.navigateUp() })
         }
     }
 }

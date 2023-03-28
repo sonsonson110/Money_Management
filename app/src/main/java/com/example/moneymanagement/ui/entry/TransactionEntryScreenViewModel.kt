@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.stateIn
 class TransactionEntryScreenViewModel(
     private val transactionRepository: TransactionRepository,
     categoryWithSubcategoriesRepository: CategoryWithSubcategoriesRepository,
-    ) : ViewModel() {
+) : ViewModel() {
 
     //đưa ra màn hình sub-category list
     val categoryState: StateFlow<CategoryState> =
@@ -37,14 +37,15 @@ class TransactionEntryScreenViewModel(
 
     fun updateUiState(transactionEntry: TransactionEntry) {
         transactionEntryUiState =
-            TransactionEntryUiState(transactionEntry = transactionEntry, isEntryValid = transactionEntry.isValid())
+            TransactionEntryUiState(
+                transactionEntry = transactionEntry,
+                isEntryValid = transactionEntry.isValid()
+            )
     }
 
     suspend fun saveTransaction() {
         if (transactionEntryUiState.isEntryValid)
-            transactionEntryUiState.transactionEntry.let {
-                transactionRepository.insertTransaction(transactionEntryUiState.transactionEntry.toTransaction())
-            }
+            transactionRepository.insertTransaction(transactionEntryUiState.transactionEntry.toTransaction())
     }
 }
 
@@ -63,11 +64,11 @@ data class TransactionEntry(
     val transactionAmount: String = "",
     val transactionDate: String = "",
     val transactionNote: String = "",
-    val category: Category = Category(0,"",""),
+    val category: Category = Category(0, "", ""),
     val subcategory: Subcategory? = null,
 )
 
-private fun TransactionEntry.isValid(): Boolean {
+fun TransactionEntry.isValid(): Boolean {
     this.let {
         if (it.transactionAmount.isBlank()
             || it.transactionDate.isBlank()

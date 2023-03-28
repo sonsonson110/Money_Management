@@ -6,19 +6,18 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.database.repository.CategoryWithSubcategoriesRepository
 import com.example.moneymanagement.database.repository.TransactionRepository
-import com.example.moneymanagement.ui.entry.CategoryState
-import com.example.moneymanagement.ui.entry.TransactionEntryUiState
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import com.example.moneymanagement.ui.detail.groupAmount
+import com.example.moneymanagement.ui.entry.*
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.text.DecimalFormat
 
 class TransactionEditViewModel(
     savedStateHandle: SavedStateHandle,
-    transactionRepository: TransactionRepository,
+    private val transactionRepository: TransactionRepository,
     categoryWithSubcategoriesRepository: CategoryWithSubcategoriesRepository
 ): ViewModel() {
 
@@ -33,14 +32,44 @@ class TransactionEditViewModel(
         )
 
     //Edit screen state
-    var transationEditUiState by mutableStateOf(TransactionEntryUiState())
+    var transactionEditUiState by mutableStateOf(TransactionEntryUiState())
         private set
 
     private val transactionId: Int = checkNotNull(savedStateHandle[TransactionEditDestination.transactionIdArg])
 
-//    init {
-//        viewModelScope.launch {
-//            transactionEditUiState =
-//        }
-//    }
+    init {
+        viewModelScope.launch {
+            transactionEditUiState = transactionRepository.loadTransactionDetailById(transactionId)
+                .filterNotNull()
+                .first()
+                .toTransactionEntryUiState(true)
+        }
+    }
+
+    fun updateUiState(transactionEntry: TransactionEntry) {
+        transactionEditUiState = TransactionEntryUiState(
+            transactionEntry = transactionEntry,
+            isEntryValid = transactionEntry.isValid()
+        )
+    }
+
+    suspend fun updateTransaction() {
+        if (transactionEditUiState.isEntryValid)
+            transactionRepository.updateTransaction(transactionEditUiState.transactionEntry.toTransaction())
+    }
 }
+
+fun TransactionWithCateAndSubcategory.toTransactionEntry() = TransactionEntry(
+    transactionId =  transaction.transactionId,
+    transactionName = transaction.transactionName?: "Chưa đề cập",
+    transactionAmount = DecimalFormat("#").format(transaction.transactionAmount),
+    transactionDate = transaction.transactionDate,
+    transactionNote = transaction.transactionNote?: "Chưa đề cập",
+    category = category,
+    subcategory = subcategory
+)
+
+fun TransactionWithCateAndSubcategory.toTransactionEntryUiState(isEntryValid: Boolean) = TransactionEntryUiState(
+    transactionEntry = this.toTransactionEntry(),
+    isEntryValid = isEntryValid
+)

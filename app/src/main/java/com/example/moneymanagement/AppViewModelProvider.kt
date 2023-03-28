@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.moneymanagement.ui.detail.TransactionDetailViewModel
+import com.example.moneymanagement.ui.edit.TransactionEditViewModel
 import com.example.moneymanagement.ui.entry.TransactionEntryScreenViewModel
 import com.example.moneymanagement.ui.home.HomeViewModel
 
@@ -27,6 +28,14 @@ object AppViewModelProvider {
             TransactionEntryScreenViewModel(
                 appApplication().container.transactionRepository,
                 appApplication().container.categoryWithSubcategoriesRepository,
+            )
+        }
+
+        initializer {
+            TransactionEditViewModel(
+                this.createSavedStateHandle(),
+                appApplication().container.transactionRepository,
+                appApplication().container.categoryWithSubcategoriesRepository
             )
         }
     }

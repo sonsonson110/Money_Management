@@ -10,9 +10,11 @@ import java.util.*
 
 @Dao
 interface TransactionDao {
+    @androidx.room.Transaction
     @Query("SELECT * FROM transaction_table")
     fun loadTransactionHomeList(): Flow<List<TransactionWithCateAndSubcategory>>
 
+    @androidx.room.Transaction
     @Query("SELECT * FROM transaction_table WHERE transaction_id = :transactionId")
     fun loadTransactionDetailById(transactionId: Int): Flow<TransactionWithCateAndSubcategory>
     //bộ 3 insert một giao dịch hoàn chỉnh vào cơ sở dữ liệu
@@ -21,4 +23,7 @@ interface TransactionDao {
 
     @Delete
     suspend fun deleteTransaction(transaction: Transaction)
+
+    @Update
+    suspend fun updateTransaction(transaction: Transaction)
 }

@@ -39,6 +39,7 @@ object TransactionDetailDestination : NavigationDestination {
 @Composable
 fun TransactionDetailScreen(
     onNavigateUp: () -> Unit,
+    navigateToTransactionUpdate: (Int) -> Unit,
     viewModel: TransactionDetailViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -68,7 +69,7 @@ fun TransactionDetailScreen(
             ) {
                 Button(
                     onClick = {
-                        //TODO Implement update !
+                        navigateToTransactionUpdate(uiState.transactionWithCateAndSubcategory.transaction.transactionId)
                     },
                     modifier = Modifier.weight(0.5f)
                 ) { Text(text = "Edit") }
