@@ -18,4 +18,10 @@ data class TransactionWithCateAndSubcategory(
         entityColumn = "subcategory_id"
     )
     val subcategory: Subcategory? = null
-)
+) {
+    fun doesMatchSearchQuery(query: String): Boolean {
+        if (transaction.transactionName == null)
+            return "Chưa đề cập".contains(query, ignoreCase = true)
+        return transaction.transactionName.contains(query, ignoreCase = true)
+    }
+}

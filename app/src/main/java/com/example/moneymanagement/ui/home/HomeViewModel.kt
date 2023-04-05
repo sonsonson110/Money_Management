@@ -4,31 +4,42 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.database.repository.TransactionRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 
 class HomeViewModel(
     transactionRepository: TransactionRepository
 ) : ViewModel() {
 
-    /**
-     * homeUiState holds the state of UI. List of transactions received are mapped to homeUiState
-     */
-    val homeUiState: StateFlow<HomeUiState> =
-        transactionRepository.loadTransactionHomeList().map { HomeUiState(it) }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = HomeUiState()
-            )
 
-    companion object {
-        private const val TIMEOUT_MILLIS = 5_000L
+
+    /**
+     * Logic của thanh tìm kiếm
+     */
+    private val _searchText = MutableStateFlow("")
+    val searchText = _searchText.asStateFlow()
+
+    /**
+     * Danh sách lịch sử giao dịch lấy từ CSDL
+     */
+    private val _transactionList = transactionRepository.loadTransactionHomeList().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000L),
+        initialValue = listOf()
+    )
+    val transactionList = searchText.combine(_transactionList) { text, list ->
+        if (text.isBlank())
+            list
+        else
+            list.filter { it.doesMatchSearchQuery(text) }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000L),
+        initialValue = _transactionList.value
+    )
+
+    fun onSearchFieldChange(text: String) {
+        _searchText.value = text
     }
 }
 
-data class HomeUiState(
-    val transactionHomeList: List<TransactionWithCateAndSubcategory> = emptyList()
-)
+

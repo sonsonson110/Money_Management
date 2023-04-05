@@ -6,19 +6,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,19 +40,69 @@ fun HomeScreen(
     navigateToItemDetail: (Int) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val homeUiState by viewModel.homeUiState.collectAsState()
+    val searchText by viewModel.searchText.collectAsState()
+    val transactionList by viewModel.transactionList.collectAsState()
+
+    HomeBody(
+        navigateToItemEntry = navigateToItemEntry,
+        navigateToItemDetail = navigateToItemDetail,
+        transactionList = transactionList,
+        searchText = searchText,
+        onSearchFieldChange = viewModel::onSearchFieldChange
+    )
+}
+
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
+@Composable
+fun HomeBody(
+    navigateToItemEntry: () -> Unit,
+    navigateToItemDetail: (Int) -> Unit,
+    transactionList: List<TransactionWithCateAndSubcategory>,
+    searchText: String,
+    onSearchFieldChange: (String) -> Unit
+) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = navigateToItemEntry) {
-                Icon(imageVector = Icons.Filled.Add, contentDescription = null)
+                Icon(imageVector = Icons.Filled.Add,null)
             }
         }
-    ) { paddingValues ->
-        TransactionsList(
-            transactionHomeList = homeUiState.transactionHomeList,
-            onItemClick = { navigateToItemDetail(it.transactionId) },
-            modifier = Modifier.padding(paddingValues)
-        )
+    ) {
+        Column {
+            var isFocused by remember { mutableStateOf(false) }
+            val focusManager = LocalFocusManager.current
+            TextField(
+                value = searchText,
+                onValueChange = onSearchFieldChange,
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text(text = "Tìm tên lịch sử giao dịch") },
+                singleLine = true,
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Clear,
+                        null,
+                        modifier = Modifier
+                            .clickable { onSearchFieldChange("") }
+                            .onFocusChanged { isFocused = !isFocused }
+                    )
+                },
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+            )
+
+            Text("Filter")
+//            Row {
+//                transactionList.forEach { transaction ->
+//                    Chip(onClick = { /*TODO*/ }) {
+//                        Text(transaction.category.categoryName)
+//                    }
+//                }
+//            }
+            Spacer(modifier = Modifier.height(8.dp))
+            TransactionsList(
+                transactionHomeList = transactionList,
+                onItemClick = { navigateToItemDetail(it.transactionId) },
+            )
+        }
     }
 }
 
@@ -134,10 +183,17 @@ fun TransactionsItem(
 @Composable
 fun DefaultPreview() {
     MoneyManagementTheme {
-        //3 preview items
-        TransactionsList(
-            transactionHomeList = emptyList(),
-            onItemClick = {}
+        HomeBody(
+            navigateToItemEntry = {},
+            navigateToItemDetail = {},
+            transactionList = listOf(
+                TransactionWithCateAndSubcategory(),
+                TransactionWithCateAndSubcategory(),
+                TransactionWithCateAndSubcategory(),
+                TransactionWithCateAndSubcategory(),
+                TransactionWithCateAndSubcategory(),
+            ),
+            "",{}
         )
     }
 }
