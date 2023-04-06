@@ -36,7 +36,8 @@ class TransactionEntryScreenViewModel(
         transactionEntryUiState =
             TransactionEntryUiState(
                 transactionEntry = transactionEntry,
-                isEntryValid = transactionEntry.isValid()
+                isEntryValid = transactionEntry.isValid(),
+                currentSelectedCategoryId = transactionEntry.category.categoryId
             )
     }
 
@@ -49,6 +50,7 @@ class TransactionEntryScreenViewModel(
 data class TransactionEntryUiState(
     val transactionEntry: TransactionEntry = TransactionEntry(),
     val isEntryValid: Boolean = false,
+    val currentSelectedCategoryId: Int = 0
 )
 
 data class CategoryState(
@@ -69,7 +71,7 @@ fun TransactionEntry.isValid(): Boolean {
     this.let {
         if (it.transactionAmount.isBlank()
             || it.transactionDate.isBlank()
-            || it.category.categoryId == 0
+            || it.category.categoryId < 1
         )
             return false
     }

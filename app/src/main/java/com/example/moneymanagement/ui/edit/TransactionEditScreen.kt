@@ -55,7 +55,8 @@ fun TransactionEditScreen(
             transactionEntry = viewModel.transactionEditUiState.transactionEntry,
             categoryList = categoryState.categoryWithSubcategoriesList,
             buttonFulfilled = viewModel.transactionEditUiState.isEntryValid,
-            onValueChange = viewModel::updateUiState
+            onValueChange = viewModel::updateUiState,
+            currentSelectedCategoryId = viewModel.transactionEditUiState.currentSelectedCategoryId
         )
     }
 }

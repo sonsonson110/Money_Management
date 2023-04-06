@@ -77,6 +77,7 @@ fun TransactionEntryScreen(
             categoryList = categoryState.categoryWithSubcategoriesList,
             buttonFulfilled = viewModel.transactionEntryUiState.isEntryValid,
             onValueChange = viewModel::updateUiState,
+            currentSelectedCategoryId = viewModel.transactionEntryUiState.currentSelectedCategoryId
         )
     }
 }
@@ -89,6 +90,7 @@ fun TransactionEntryBody(
     categoryList: List<CategoryWithSubcategories>,
     buttonFulfilled: Boolean,
     onValueChange: (TransactionEntry) -> Unit,
+    currentSelectedCategoryId: Int
 ) {
 
     val focusManager = LocalFocusManager.current
@@ -180,7 +182,8 @@ fun TransactionEntryBody(
             list = categoryList,
             transactionEntry = transactionEntry,
             onCategorySelect = onValueChange,
-            updateSubcategories = { newList -> subcategoriesFromCategory = newList }
+            updateSubcategories = { newList -> subcategoriesFromCategory = newList },
+            currentSelectedCategoryId = currentSelectedCategoryId
         )
 
         SubcategoryDropdownMenu(
@@ -210,9 +213,9 @@ fun CategorySelectionRow(
     transactionEntry: TransactionEntry,
     updateSubcategories: (List<Subcategory>) -> Unit,
     onCategorySelect: (TransactionEntry) -> Unit,
+    currentSelectedCategoryId: Int
 ) {
     //TODO: Fix here
-    var selectedCategoryIndex by remember { mutableStateOf(-1) }
     val context = LocalContext.current
 
     LazyRow(modifier = Modifier.fillMaxWidth()) {
@@ -224,21 +227,20 @@ fun CategorySelectionRow(
                     .border(
                         BorderStroke(
                             width = 2.dp,
-                            color = if (selectedCategoryIndex == item.category.categoryId) Color.Red else Color.Transparent
+                            color = if (currentSelectedCategoryId == item.category.categoryId) Color.Red else Color.Transparent
                         ),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .clip(RoundedCornerShape(8.dp))
-                    .background(color = if (selectedCategoryIndex == item.category.categoryId) Color.Gray else Color.Transparent)
+                    .background(color = if (currentSelectedCategoryId == item.category.categoryId) Color.Gray else Color.Transparent)
                     .padding(8.dp)
                     .selectable(
-                        selected = selectedCategoryIndex == item.category.categoryId,
+                        selected = currentSelectedCategoryId == item.category.categoryId,
                         onClick = {
-                            selectedCategoryIndex = item.category.categoryId
                             onCategorySelect(
                                 transactionEntry.copy(
                                     category = item.category,
-                                    subcategory = null
+                                    subcategory = null,
                                 )
                             )
                             updateSubcategories(item.subcategories)

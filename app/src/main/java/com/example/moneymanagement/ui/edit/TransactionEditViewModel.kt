@@ -49,7 +49,8 @@ class TransactionEditViewModel(
     fun updateUiState(transactionEntry: TransactionEntry) {
         transactionEditUiState = TransactionEntryUiState(
             transactionEntry = transactionEntry,
-            isEntryValid = transactionEntry.isValid()
+            isEntryValid = transactionEntry.isValid(),
+            currentSelectedCategoryId = transactionEntry.category.categoryId
         )
     }
 
@@ -71,5 +72,6 @@ fun TransactionWithCateAndSubcategory.toTransactionEntry() = TransactionEntry(
 
 fun TransactionWithCateAndSubcategory.toTransactionEntryUiState(isEntryValid: Boolean) = TransactionEntryUiState(
     transactionEntry = this.toTransactionEntry(),
-    isEntryValid = isEntryValid
+    isEntryValid = isEntryValid,
+    currentSelectedCategoryId = this.category.categoryId
 )
