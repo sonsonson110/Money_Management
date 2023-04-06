@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.*
@@ -19,15 +21,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
+import com.example.moneymanagement.database.entity.Subcategory
 import com.example.moneymanagement.database.entity.Transaction
+import com.example.moneymanagement.database.model.CategoryWithSubcategories
 import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.ui.detail.groupAmount
 import com.example.moneymanagement.ui.navigation.NavigationDestination
-import com.example.moneymanagement.ui.theme.MoneyManagementTheme
 
 object HomeDestination : NavigationDestination {
     override val route = "home"
@@ -42,13 +44,27 @@ fun HomeScreen(
 ) {
     val searchText by viewModel.searchText.collectAsState()
     val transactionList by viewModel.transactionList.collectAsState()
+    val categoryWithSubCategoryList by viewModel.categoryWithSubCategoryList.collectAsState()
+    val isCategoryChipSelected by viewModel.isCategoryChipSelected.collectAsState()
+    val selectedCategoryChipIndex by viewModel.selectedCategoryChipIndex.collectAsState()
+    val subcategoryList by viewModel.subcategoryList.collectAsState()
+    val isSubcategoryChipSelected by viewModel.isSubcategoryChipSelected.collectAsState()
+    val selectedSubcategoryChipId by viewModel.selectedSubcategoryChipId.collectAsState()
 
     HomeBody(
         navigateToItemEntry = navigateToItemEntry,
         navigateToItemDetail = navigateToItemDetail,
         transactionList = transactionList,
         searchText = searchText,
-        onSearchFieldChange = viewModel::onSearchFieldChange
+        onSearchFieldChange = viewModel::onSearchFieldChange,
+        categoryWithSubCategoryList = categoryWithSubCategoryList,
+        selectedCategoryChipIndex = selectedCategoryChipIndex,
+        isCategoryChipSelected = isCategoryChipSelected,
+        onCategoryChipChange = viewModel::onCategoryChipChange,
+        subcategoryList = subcategoryList,
+        isSubcategoryChipSelected = isSubcategoryChipSelected,
+        onSubcategoryChipChange = viewModel::onSubcategoryChipChange,
+        selectedSubcategoryChipId = selectedSubcategoryChipId
     )
 }
 
@@ -59,49 +75,139 @@ fun HomeBody(
     navigateToItemDetail: (Int) -> Unit,
     transactionList: List<TransactionWithCateAndSubcategory>,
     searchText: String,
-    onSearchFieldChange: (String) -> Unit
+    onSearchFieldChange: (String) -> Unit,
+    categoryWithSubCategoryList: List<CategoryWithSubcategories>,
+    selectedCategoryChipIndex: Int,
+    isCategoryChipSelected: Boolean,
+    onCategoryChipChange: (Int) -> Unit,
+    subcategoryList: List<Subcategory>,
+    isSubcategoryChipSelected: Boolean,
+    onSubcategoryChipChange: (Int) -> Unit,
+    selectedSubcategoryChipId: Int
 ) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = navigateToItemEntry) {
-                Icon(imageVector = Icons.Filled.Add,null)
+                Icon(imageVector = Icons.Filled.Add, null)
             }
         }
     ) {
         Column {
-            var isFocused by remember { mutableStateOf(false) }
-            val focusManager = LocalFocusManager.current
-            TextField(
-                value = searchText,
-                onValueChange = onSearchFieldChange,
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(text = "Tìm tên lịch sử giao dịch") },
-                singleLine = true,
-                trailingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Clear,
-                        null,
-                        modifier = Modifier
-                            .clickable { onSearchFieldChange("") }
-                            .onFocusChanged { isFocused = !isFocused }
-                    )
-                },
-                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+
+            /*
+            Thanh tìm kiếm lịch sử giao dịch theo tên
+             */
+            SearchBar(searchText = searchText, onSearchFieldChange = onSearchFieldChange)
+
+            /*
+            Mục ô chọn để lọc lịch sử giao dịch
+             */
+            Text("Filter")
+            CategoryChips(
+                categoryWithSubCategoryList ,
+                selectedCategoryChipIndex ,
+                isCategoryChipSelected ,
+                onCategoryChipChange,
+                subcategoryList,
+                isSubcategoryChipSelected,
+                onSubcategoryChipChange,
+                selectedSubcategoryChipId
             )
 
-            Text("Filter")
-//            Row {
-//                transactionList.forEach { transaction ->
-//                    Chip(onClick = { /*TODO*/ }) {
-//                        Text(transaction.category.categoryName)
-//                    }
-//                }
-//            }
             Spacer(modifier = Modifier.height(8.dp))
+
+            /*
+            Mục hiển thị danh sách lịch sử giao dịch
+             */
             TransactionsList(
                 transactionHomeList = transactionList,
                 onItemClick = { navigateToItemDetail(it.transactionId) },
             )
+        }
+    }
+}
+@Composable
+fun SearchBar(
+    searchText: String,
+    onSearchFieldChange: (String) -> Unit,
+) {
+    var isFocused by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    TextField(
+        value = searchText,
+        onValueChange = onSearchFieldChange,
+        modifier = Modifier.fillMaxWidth(),
+        placeholder = { Text(text = "Tìm tên lịch sử giao dịch") },
+        singleLine = true,
+        trailingIcon = {
+            Icon(
+                imageVector = Icons.Filled.Clear,
+                null,
+                modifier = Modifier
+                    .clickable { onSearchFieldChange("") }
+                    .onFocusChanged { isFocused = !isFocused }
+            )
+        },
+        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+    )
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun CategoryChips(
+    categoryWithSubCategoryList: List<CategoryWithSubcategories>,
+    selectedCategoryChipIndex: Int,
+    isCategoryChipSelected: Boolean,
+    onCategoryChipChange: (Int) -> Unit,
+    subcategoryList: List<Subcategory>,
+    isSubcategoryChipSelected: Boolean,
+    onSubcategoryChipChange: (Int) -> Unit,
+    selectedSubcategoryChipId: Int
+) {
+    LazyRow {
+        itemsIndexed(categoryWithSubCategoryList) { index, item ->
+            Chip(
+                onClick = {
+                    if (
+                        isCategoryChipSelected &&
+                        selectedCategoryChipIndex == index
+                    )
+                        onCategoryChipChange(-1)
+                    else
+                        onCategoryChipChange(index)
+                },
+                colors = if (selectedCategoryChipIndex.inc() == item.category.categoryId)
+                    ChipDefaults.chipColors(backgroundColor = Color(0xFF1DB954))
+                else
+                    ChipDefaults.chipColors() //default
+            ) {
+                Text(text = item.category.categoryName)
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+        }
+    }
+
+    if (selectedCategoryChipIndex == -1) return
+    /*
+    Hiển thị chip mở rộng nếu thể loại cha đã được chọn
+     */
+    LazyRow {
+        items(subcategoryList) { item ->
+            Chip(
+                onClick = {
+                    if (isSubcategoryChipSelected && selectedSubcategoryChipId == item.subcategoryId)
+                        onSubcategoryChipChange(-1)
+                    else
+                        onSubcategoryChipChange(item.subcategoryId)
+                },
+                colors = if (selectedSubcategoryChipId == item.subcategoryId)
+                    ChipDefaults.chipColors(backgroundColor = Color(0xFF1DB954))
+                else
+                    ChipDefaults.chipColors() //default
+            ) {
+                Text(text = item.subcategoryName)
+            }
+            Spacer(modifier = Modifier.width(4.dp))
         }
     }
 }
@@ -113,9 +219,7 @@ fun TransactionsList(
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier.fillMaxWidth()) {
-        itemsIndexed(
-            items = transactionHomeList
-        ) { currentIndex, transactionWithCateAndSubcategory ->
+        itemsIndexed(items = transactionHomeList) { currentIndex, transactionWithCateAndSubcategory ->
             TransactionsItem(
                 transactionWithCateAndSubcategory = transactionWithCateAndSubcategory,
                 index = currentIndex,
@@ -173,27 +277,9 @@ fun TransactionsItem(
         }
 
         Text(
-            text = transactionWithCateAndSubcategory.transaction.transactionAmount.toString().groupAmount() + "đ",
+            text = transactionWithCateAndSubcategory.transaction.transactionAmount.toString()
+                .groupAmount() + "đ",
             modifier = Modifier.align(Alignment.BottomEnd)
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    MoneyManagementTheme {
-        HomeBody(
-            navigateToItemEntry = {},
-            navigateToItemDetail = {},
-            transactionList = listOf(
-                TransactionWithCateAndSubcategory(),
-                TransactionWithCateAndSubcategory(),
-                TransactionWithCateAndSubcategory(),
-                TransactionWithCateAndSubcategory(),
-                TransactionWithCateAndSubcategory(),
-            ),
-            "",{}
         )
     }
 }

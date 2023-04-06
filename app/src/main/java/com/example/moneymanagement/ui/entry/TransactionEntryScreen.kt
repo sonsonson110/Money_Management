@@ -211,7 +211,7 @@ fun CategorySelectionRow(
     updateSubcategories: (List<Subcategory>) -> Unit,
     onCategorySelect: (TransactionEntry) -> Unit,
 ) {
-
+    //TODO: Fix here
     var selectedCategoryIndex by remember { mutableStateOf(-1) }
     val context = LocalContext.current
 

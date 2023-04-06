@@ -14,7 +14,10 @@ import com.example.moneymanagement.ui.home.HomeViewModel
 object AppViewModelProvider {
     val Factory = viewModelFactory {
         initializer {
-            HomeViewModel(appApplication().container.transactionRepository)
+            HomeViewModel(
+                appApplication().container.transactionRepository,
+                appApplication().container.categoryWithSubcategoriesRepository
+            )
         }
 
         initializer {

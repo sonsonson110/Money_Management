@@ -11,10 +11,7 @@ import com.example.moneymanagement.database.entity.Subcategory
 import com.example.moneymanagement.database.entity.Transaction
 import com.example.moneymanagement.database.repository.CategoryWithSubcategoriesRepository
 import com.example.moneymanagement.database.repository.TransactionRepository
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 
 class TransactionEntryScreenViewModel(
     private val transactionRepository: TransactionRepository,
@@ -64,7 +61,7 @@ data class TransactionEntry(
     val transactionAmount: String = "",
     val transactionDate: String = "",
     val transactionNote: String = "",
-    val category: Category = Category(0, "", ""),
+    val category: Category = Category(-1, "", ""),
     val subcategory: Subcategory? = null,
 )
 
