@@ -60,10 +60,3 @@ fun TransactionEditScreen(
         )
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun Test() {
-    MoneyManagementTheme {
-    }
-}
