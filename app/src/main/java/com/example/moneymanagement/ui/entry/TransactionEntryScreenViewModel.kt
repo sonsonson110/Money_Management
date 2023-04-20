@@ -19,14 +19,13 @@ class TransactionEntryScreenViewModel(
 ) : ViewModel() {
 
     //đưa ra màn hình sub-category list
-    val categoryState: StateFlow<CategoryState> =
-        categoryWithSubcategoriesRepository.loadAllCategoryWithSubcategory.map {
-            CategoryState(it)
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000L),
-            initialValue = CategoryState()
-        )
+    val categoryList: StateFlow<List<CategoryWithSubcategories>> =
+        categoryWithSubcategoriesRepository.loadAllCategoryWithSubcategory
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000L),
+                initialValue = listOf()
+            )
 
     //theo dõi state input
     var transactionEntryUiState by mutableStateOf(TransactionEntryUiState())
@@ -51,10 +50,6 @@ data class TransactionEntryUiState(
     val transactionEntry: TransactionEntry = TransactionEntry(),
     val isEntryValid: Boolean = false,
     val currentSelectedCategoryId: Int = 0
-)
-
-data class CategoryState(
-    val categoryWithSubcategoriesList: List<CategoryWithSubcategories> = listOf()
 )
 
 data class TransactionEntry(

@@ -8,13 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
 import com.example.moneymanagement.ui.entry.TransactionEntryBody
 import com.example.moneymanagement.ui.entry.TransactionEntryDestination
 import com.example.moneymanagement.ui.navigation.NavigationDestination
-import com.example.moneymanagement.ui.theme.MoneyManagementTheme
 import kotlinx.coroutines.launch
 
 object TransactionEditDestination : NavigationDestination {
@@ -44,7 +42,7 @@ fun TransactionEditScreen(
             )
         }
     ) {
-        val categoryState by viewModel.categoryState.collectAsState()
+        val categoryList by viewModel.categoryList.collectAsState()
         TransactionEntryBody(
             onSaveClick = {
                 coroutineScope.launch {
@@ -53,7 +51,7 @@ fun TransactionEditScreen(
                 }
             },
             transactionEntry = viewModel.transactionEditUiState.transactionEntry,
-            categoryList = categoryState.categoryWithSubcategoriesList,
+            categoryList = categoryList,
             buttonFulfilled = viewModel.transactionEditUiState.isEntryValid,
             onValueChange = viewModel::updateUiState,
             currentSelectedCategoryId = viewModel.transactionEditUiState.currentSelectedCategoryId

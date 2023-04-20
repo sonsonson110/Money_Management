@@ -6,11 +6,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.moneymanagement.database.model.CategoryWithSubcategories
 import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.database.repository.CategoryWithSubcategoriesRepository
 import com.example.moneymanagement.database.repository.TransactionRepository
-import com.example.moneymanagement.ui.detail.groupAmount
-import com.example.moneymanagement.ui.entry.*
+import com.example.moneymanagement.ui.entry.TransactionEntry
+import com.example.moneymanagement.ui.entry.TransactionEntryUiState
+import com.example.moneymanagement.ui.entry.isValid
+import com.example.moneymanagement.ui.entry.toTransaction
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.text.DecimalFormat
@@ -22,13 +25,12 @@ class TransactionEditViewModel(
 ): ViewModel() {
 
     //đưa ra màn hình sub-category list
-    val categoryState: StateFlow<CategoryState> =
-        categoryWithSubcategoriesRepository.loadAllCategoryWithSubcategory.map {
-            CategoryState(it)
-        }.stateIn(
+    val categoryList: StateFlow<List<CategoryWithSubcategories>> =
+        categoryWithSubcategoriesRepository.loadAllCategoryWithSubcategory
+            .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000L),
-            initialValue = CategoryState()
+            initialValue = listOf()
         )
 
     //Edit screen state

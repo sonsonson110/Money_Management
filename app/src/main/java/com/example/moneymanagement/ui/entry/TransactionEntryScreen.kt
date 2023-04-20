@@ -65,7 +65,7 @@ fun TransactionEntryScreen(
         }
     ) {
         val coroutineScope = rememberCoroutineScope()
-        val categoryState by viewModel.categoryState.collectAsState()
+        val categoryList by viewModel.categoryList.collectAsState()
         TransactionEntryBody(
             onSaveClick = {
                 coroutineScope.launch {
@@ -74,7 +74,7 @@ fun TransactionEntryScreen(
                 }
             },
             transactionEntry = viewModel.transactionEntryUiState.transactionEntry,
-            categoryList = categoryState.categoryWithSubcategoriesList,
+            categoryList = categoryList,
             buttonFulfilled = viewModel.transactionEntryUiState.isEntryValid,
             onValueChange = viewModel::updateUiState,
             currentSelectedCategoryId = viewModel.transactionEntryUiState.currentSelectedCategoryId
@@ -215,7 +215,6 @@ fun CategorySelectionRow(
     onCategorySelect: (TransactionEntry) -> Unit,
     currentSelectedCategoryId: Int
 ) {
-    //TODO: Fix here
     val context = LocalContext.current
 
     LazyRow(modifier = Modifier.fillMaxWidth()) {
