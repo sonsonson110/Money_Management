@@ -26,11 +26,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
-import com.example.moneymanagement.R
 import com.example.moneymanagement.database.entity.Subcategory
 import com.example.moneymanagement.database.entity.Transaction
 import com.example.moneymanagement.database.model.CategoryWithSubcategories
 import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
+import com.example.moneymanagement.ui.BottomNavigator
 import com.example.moneymanagement.ui.detail.groupAmount
 import com.example.moneymanagement.ui.navigation.NavigationDestination
 import com.example.moneymanagement.ui.theme.MoneyManagementTheme
@@ -42,6 +42,7 @@ object HomeDestination : NavigationDestination {
 
 @Composable
 fun HomeScreen(
+    navigateToStatScreen: () -> Unit,
     navigateToItemEntry: () -> Unit,
     navigateToItemDetail: (Int) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
@@ -56,6 +57,7 @@ fun HomeScreen(
     val selectedSubcategoryChipId by viewModel.selectedSubcategoryChipId.collectAsState()
 
     HomeBody(
+        navigateToStatScreen = navigateToStatScreen,
         navigateToItemEntry = navigateToItemEntry,
         navigateToItemDetail = navigateToItemDetail,
         transactionList = transactionList,
@@ -75,6 +77,7 @@ fun HomeScreen(
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun HomeBody(
+    navigateToStatScreen: () -> Unit,
     navigateToItemEntry: () -> Unit,
     navigateToItemDetail: (Int) -> Unit,
     transactionList: List<TransactionWithCateAndSubcategory>,
@@ -89,38 +92,27 @@ fun HomeBody(
     onSubcategoryChipChange: (Int) -> Unit,
     selectedSubcategoryChipId: Int
 ) {
+    val scaffoldState = rememberScaffoldState()
+
     Scaffold(
+        bottomBar = { BottomNavigator({}, navigateToStatScreen, HomeDestination.route) },
         floatingActionButton = {
-            FloatingActionButton(onClick = navigateToItemEntry) {
-                Icon(imageVector = Icons.Filled.Add, null)
+            FloatingActionButton(onClick = { navigateToItemEntry() }) {
+                Icon(Icons.Filled.Add, null)
             }
-        }
+        },
+        scaffoldState = scaffoldState,
+        floatingActionButtonPosition = FabPosition.Center,
+        isFloatingActionButtonDocked = true
     ) {
         Column {
-
             /*
             Thanh tìm kiếm lịch sử giao dịch theo tên và nút thống kê
              */
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                SearchBar(
-                    searchText = searchText,
-                    onSearchFieldChange = onSearchFieldChange,
-                    modifier = Modifier.weight(0.8f)
-                )
-                Icon(
-                    painter = painterResource(id = R.drawable.chart_icon),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .weight(0.2f)
-                        .clickable {
-
-                        }
-                )
-            }
-
+            SearchBar(
+                searchText = searchText,
+                onSearchFieldChange = onSearchFieldChange
+            )
             /*
             Mục ô chọn để lọc lịch sử giao dịch
              */
@@ -152,15 +144,14 @@ fun HomeBody(
 @Composable
 fun SearchBar(
     searchText: String,
-    onSearchFieldChange: (String) -> Unit,
-    modifier: Modifier
+    onSearchFieldChange: (String) -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     TextField(
         value = searchText,
         onValueChange = onSearchFieldChange,
-        modifier = modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         placeholder = { Text(text = "Tìm tên lịch sử giao dịch") },
         singleLine = true,
         trailingIcon = {
@@ -249,12 +240,13 @@ fun TransactionsList(
                 Text(
                     text = date,
                     fontSize = 23.sp,
-                    modifier = Modifier.fillMaxWidth()
-                        .background(Color(189,233,235,255))
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(189, 233, 235, 255))
                         .padding(vertical = 4.dp)
                 )
                 Column(modifier = modifier.fillMaxWidth()) {
-                    transactions.forEachIndexed() { index, transaction ->
+                    transactions.forEachIndexed { index, transaction ->
                         TransactionsItem(
                             transactionWithCateAndSubcategory = transaction,
                             index = index,
@@ -326,7 +318,7 @@ fun TransactionsItem(
 @Composable
 @Preview
 fun PreviewTransactionList() {
-    MoneyManagementTheme() {
+    MoneyManagementTheme {
         TransactionsList(
             transactionHomeList = sampleData.groupBy { it.transaction.transactionDate },
             onItemClick = {}

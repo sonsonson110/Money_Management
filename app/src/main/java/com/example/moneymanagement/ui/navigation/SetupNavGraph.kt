@@ -6,6 +6,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.moneymanagement.ui.chart.StatDestination
+import com.example.moneymanagement.ui.chart.StatScreen
 import com.example.moneymanagement.ui.detail.TransactionDetailDestination
 import com.example.moneymanagement.ui.detail.TransactionDetailScreen
 import com.example.moneymanagement.ui.edit.TransactionEditDestination
@@ -26,9 +28,8 @@ fun SetupNavGraph(
         composable(route = HomeDestination.route) {
             HomeScreen(
                 navigateToItemEntry = { navController.navigate(TransactionEntryDestination.route) },
-                navigateToItemDetail = {
-                    navController.navigate("${TransactionDetailDestination.route}/$it")
-                }
+                navigateToItemDetail = { navController.navigate("${TransactionDetailDestination.route}/$it") },
+                navigateToStatScreen = { navController.navigate(StatDestination.route) }
             )
         }
 
@@ -70,6 +71,14 @@ fun SetupNavGraph(
             TransactionEditScreen(
                 navigateBack = { navController.popBackStack() },
                 onNavigateUp = { navController.navigateUp() })
+        }
+
+        //Stat route
+        composable(route = StatDestination.route) {
+            StatScreen(
+                navigateToHomeScreen = { navController.navigate(HomeDestination.route) },
+                navigateToItemEntry = { navController.navigate(TransactionEntryDestination.route) },
+            )
         }
     }
 }
