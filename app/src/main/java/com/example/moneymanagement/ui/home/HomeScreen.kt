@@ -21,15 +21,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
+import com.example.moneymanagement.R
 import com.example.moneymanagement.database.entity.Subcategory
 import com.example.moneymanagement.database.entity.Transaction
 import com.example.moneymanagement.database.model.CategoryWithSubcategories
 import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.ui.detail.groupAmount
 import com.example.moneymanagement.ui.navigation.NavigationDestination
+import com.example.moneymanagement.ui.theme.MoneyManagementTheme
 
 object HomeDestination : NavigationDestination {
     override val route = "home"
@@ -95,18 +99,36 @@ fun HomeBody(
         Column {
 
             /*
-            Thanh tìm kiếm lịch sử giao dịch theo tên
+            Thanh tìm kiếm lịch sử giao dịch theo tên và nút thống kê
              */
-            SearchBar(searchText = searchText, onSearchFieldChange = onSearchFieldChange)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SearchBar(
+                    searchText = searchText,
+                    onSearchFieldChange = onSearchFieldChange,
+                    modifier = Modifier.weight(0.8f)
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.chart_icon),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .weight(0.2f)
+                        .clickable {
+
+                        }
+                )
+            }
 
             /*
             Mục ô chọn để lọc lịch sử giao dịch
              */
             Text("Filter")
             CategoryChips(
-                categoryWithSubCategoryList ,
-                selectedCategoryChipIndex ,
-                isCategoryChipSelected ,
+                categoryWithSubCategoryList,
+                selectedCategoryChipIndex,
+                isCategoryChipSelected,
                 onCategoryChipChange,
                 subcategoryList,
                 isSubcategoryChipSelected,
@@ -120,23 +142,25 @@ fun HomeBody(
             Mục hiển thị danh sách lịch sử giao dịch
              */
             TransactionsList(
-                transactionHomeList = transactionList,
+                transactionHomeList = transactionList.groupBy { it.transaction.transactionDate },
                 onItemClick = { navigateToItemDetail(it.transactionId) },
             )
         }
     }
 }
+
 @Composable
 fun SearchBar(
     searchText: String,
     onSearchFieldChange: (String) -> Unit,
+    modifier: Modifier
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     TextField(
         value = searchText,
         onValueChange = onSearchFieldChange,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         placeholder = { Text(text = "Tìm tên lịch sử giao dịch") },
         singleLine = true,
         trailingIcon = {
@@ -175,6 +199,7 @@ fun CategoryChips(
                         onCategoryChipChange(-1)
                     else
                         onCategoryChipChange(index)
+                    onSubcategoryChipChange(-1)
                 },
                 colors = if (selectedCategoryChipIndex.inc() == item.category.categoryId)
                     ChipDefaults.chipColors(backgroundColor = Color(0xFF1DB954))
@@ -214,20 +239,34 @@ fun CategoryChips(
 
 @Composable
 fun TransactionsList(
-    transactionHomeList: List<TransactionWithCateAndSubcategory>,
+    transactionHomeList: Map<String, List<TransactionWithCateAndSubcategory>>,
     onItemClick: (Transaction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier.fillMaxWidth()) {
-        itemsIndexed(items = transactionHomeList) { currentIndex, transactionWithCateAndSubcategory ->
-            TransactionsItem(
-                transactionWithCateAndSubcategory = transactionWithCateAndSubcategory,
-                index = currentIndex,
-                onItemClick = onItemClick
-            )
+        transactionHomeList.forEach { (date, transactions) ->
+            item {
+                Text(
+                    text = date,
+                    fontSize = 23.sp,
+                    modifier = Modifier.fillMaxWidth()
+                        .background(Color(189,233,235,255))
+                        .padding(vertical = 4.dp)
+                )
+                Column(modifier = modifier.fillMaxWidth()) {
+                    transactions.forEachIndexed() { index, transaction ->
+                        TransactionsItem(
+                            transactionWithCateAndSubcategory = transaction,
+                            index = index,
+                            onItemClick = onItemClick
+                        )
+                    }
+                }
+            }
         }
     }
 }
+
 
 @SuppressLint("DiscouragedApi")
 @Composable
@@ -283,3 +322,35 @@ fun TransactionsItem(
         )
     }
 }
+
+@Composable
+@Preview
+fun PreviewTransactionList() {
+    MoneyManagementTheme() {
+        TransactionsList(
+            transactionHomeList = sampleData.groupBy { it.transaction.transactionDate },
+            onItemClick = {}
+        )
+    }
+}
+
+val sampleData = listOf(
+    TransactionWithCateAndSubcategory(
+        transaction = Transaction(0, "", 1.0, "2002-10-14", "", 1, 1)
+    ),
+    TransactionWithCateAndSubcategory(
+        transaction = Transaction(1, "", 1.0, "2002-10-14", "", 1, 1)
+    ),
+    TransactionWithCateAndSubcategory(
+        transaction = Transaction(2, "", 1.0, "2002-10-13", "", 1, 1)
+    ),
+    TransactionWithCateAndSubcategory(
+        transaction = Transaction(3, "", 1.0, "2002-10-12", "", 1, 1)
+    ),
+    TransactionWithCateAndSubcategory(
+        transaction = Transaction(4, "", 1.0, "2002-10-12", "", 1, 1)
+    ),
+    TransactionWithCateAndSubcategory(
+        transaction = Transaction(5, "", 1.0, "2002-10-11", "", 1, 1)
+    ),
+)
