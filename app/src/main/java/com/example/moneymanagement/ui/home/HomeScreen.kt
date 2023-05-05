@@ -92,8 +92,6 @@ fun HomeBody(
     onSubcategoryChipChange: (Int) -> Unit,
     selectedSubcategoryChipId: Int
 ) {
-    val scaffoldState = rememberScaffoldState()
-
     Scaffold(
         bottomBar = { BottomNavigator({}, navigateToStatScreen, HomeDestination.route) },
         floatingActionButton = {
@@ -101,7 +99,6 @@ fun HomeBody(
                 Icon(Icons.Filled.Add, null)
             }
         },
-        scaffoldState = scaffoldState,
         floatingActionButtonPosition = FabPosition.Center,
         isFloatingActionButtonDocked = true
     ) {
@@ -151,7 +148,7 @@ fun SearchBar(
     TextField(
         value = searchText,
         onValueChange = onSearchFieldChange,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
         placeholder = { Text(text = "Tìm tên lịch sử giao dịch") },
         singleLine = true,
         trailingIcon = {
@@ -240,9 +237,10 @@ fun TransactionsList(
                 Text(
                     text = date,
                     fontSize = 23.sp,
+                    color = Color.Black,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(189, 233, 235, 255))
+                        .background(Color(212, 175, 55))
                         .padding(vertical = 4.dp)
                 )
                 Column(modifier = modifier.fillMaxWidth()) {
@@ -272,7 +270,7 @@ fun TransactionsItem(
         //add padding before setting size -> margin
         //add padding after setting size -> padding
         modifier = Modifier
-            .background(color = if (index % 2 == 0) Color.White else Color(211, 211, 211))
+            .background(color = if (index % 2 == 0) Color(18, 18, 18) else Color(31, 27, 36))
             .padding(8.dp)
             .clickable { onItemClick(transactionWithCateAndSubcategory.transaction) },
     ) {

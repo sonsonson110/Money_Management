@@ -280,32 +280,34 @@ fun SubcategoryDropdownMenu(
     var expansionState by remember { mutableStateOf(false) }
     val icon = if (expansionState) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown
 
-    TextField(
-        value = if (transactionEntry.subcategory != null) transactionEntry.subcategory.subcategoryName else "",
-        onValueChange = {},
-        label = { Text(text = "Mở rộng") },
-        trailingIcon = {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.clickable { expansionState = !expansionState })
-        },
-        modifier = Modifier.fillMaxWidth(),
-        readOnly = true
-    )
-    DropdownMenu(
-        expanded = expansionState,
-        onDismissRequest = { expansionState = false },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        list.forEach { item ->
-            DropdownMenuItem(
-                onClick = {
-                    expansionState = false
-                    onSubcategorySelect(transactionEntry.copy(subcategory = item))
+    Box {
+        TextField(
+            value = if (transactionEntry.subcategory != null) transactionEntry.subcategory.subcategoryName else "",
+            onValueChange = {},
+            label = { Text(text = "Mở rộng") },
+            trailingIcon = {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.clickable { expansionState = !expansionState })
+            },
+            modifier = Modifier.fillMaxWidth(),
+            readOnly = true
+        )
+        DropdownMenu(
+            expanded = expansionState,
+            onDismissRequest = { expansionState = false },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            list.forEach { item ->
+                DropdownMenuItem(
+                    onClick = {
+                        expansionState = false
+                        onSubcategorySelect(transactionEntry.copy(subcategory = item))
+                    }
+                ) {
+                    Text(item.subcategoryName)
                 }
-            ) {
-                Text(item.subcategoryName)
             }
         }
     }

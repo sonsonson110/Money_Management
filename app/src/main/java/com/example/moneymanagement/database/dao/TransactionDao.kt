@@ -11,7 +11,7 @@ import java.util.*
 @Dao
 interface TransactionDao {
     @androidx.room.Transaction
-    @Query("SELECT * FROM transaction_table")
+    @Query("SELECT * FROM transaction_table ORDER BY transaction_date DESC")
     fun loadTransactionHomeList(): Flow<List<TransactionWithCateAndSubcategory>>
 
     @androidx.room.Transaction

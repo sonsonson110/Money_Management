@@ -78,4 +78,8 @@ dependencies {
     def nav_version = "2.5.3"
     implementation("androidx.navigation:navigation-compose:$nav_version")
     //end navigation
+
+    //vico char
+    implementation "com.patrykandpatrick.vico:core:1.6.5"
+    implementation "com.patrykandpatrick.vico:compose-m3:1.6.5"
 }
