@@ -1,61 +1,45 @@
 package com.example.moneymanagement.ui.chart
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.patrykandpatrick.vico.compose.axis.axisLabelComponent
 import com.patrykandpatrick.vico.compose.axis.horizontal.bottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.startAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.column.columnChart
-import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.compose.style.currentChartStyle
-import com.patrykandpatrick.vico.core.axis.AxisPosition
-import com.patrykandpatrick.vico.core.axis.formatter.AxisValueFormatter
-import com.patrykandpatrick.vico.core.chart.DefaultPointConnector
-import com.patrykandpatrick.vico.core.chart.copy
 import com.patrykandpatrick.vico.core.component.shape.LineComponent
 import com.patrykandpatrick.vico.core.component.shape.Shapes
-import com.patrykandpatrick.vico.core.component.text.TextComponent
 import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entryOf
 
 @Composable
 fun CustomChart(
-    transactionMonthSumMap: Map<String, Float>,
-    transactionWeekSumMap: Map<String, Float>
+    groupTransactions: Map<String, Float>,
 ) {
     //list properties get from map
     //MONTHS
-    val recentMonths = transactionMonthSumMap.keys.toList().reversed()  //older months to the left
-    val sumOfMonths = transactionMonthSumMap.values.toList().reversed()
-    //WEEK
-    val recentWeeks = transactionWeekSumMap.keys.toList().reversed()  //older weeks to the left
-    val sumOfWeeks = transactionWeekSumMap.values.toList().reversed()
+    val weekList = groupTransactions.keys.toList().reversed()  //older months to the left
+    val weekSumList = groupTransactions.values.toList().reversed()
 
     //from list to monthEntries
-    val monthEntries = sumOfMonths.mapIndexed { index, value -> entryOf(index.toFloat(), value) }
-    val weekEntries = sumOfWeeks.mapIndexed { index, value -> entryOf(index.toFloat(), value) }
+    val weekEntries = weekSumList.mapIndexed { index, value -> entryOf(index.toFloat(), value) }
 
     //skip stateflow init part
-    if (recentMonths.isEmpty() || recentWeeks.isEmpty()) return
+    if (weekList.isEmpty()) return
 
     //data for compose chart
-    //MONTHS
-    val chartEntryModelProducer1 = ChartEntryModelProducer(monthEntries)
-    val bottomAxisValueFormatter1 =
-        AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> recentMonths[x.toInt() % recentMonths.size] }
-    //WEEKS
-    val chartEntryModelProducer2 = ChartEntryModelProducer(weekEntries)
-    val bottomAxisValueFormatter2 =
-        AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> recentWeeks[x.toInt() % recentWeeks.size] }
+    //weeks
+    val chartEntryModelProducer = ChartEntryModelProducer(weekEntries)
+//    val bottomAxisValueFormatter =
+//        AxisValueFormatter<AxisPosition.Horizontal.Bottom> { x, _ -> weekList[x.toInt() % weekList.size] }
 
     //chart type
     //column
@@ -71,39 +55,49 @@ fun CustomChart(
             }
         }
     )
-    //line
-    val pointConnector = DefaultPointConnector(cubicStrength = 0f)
-    val defaultLines = currentChartStyle.lineChart.lines
-    val lineChart = lineChart(
-        remember(defaultLines) {
-            defaultLines.map { defaultLine -> defaultLine.copy(pointConnector = pointConnector) }
-        },
-    )
 
-    Column(Modifier.fillMaxWidth()) {
-        Text("Thống kế ${recentMonths.size} tháng gần đây")
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())) {
+        Text(
+            "Thống kê tổng cộng ${weekList.size} tuần",
+            Modifier
+                .padding(top = 16.dp)
+                .fillMaxWidth(),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.caption
+        )
         Chart(
             chart = columnChart,
-            chartModelProducer = chartEntryModelProducer1,
-            startAxis = startAxis(
-                maxLabelCount = 5
-            ),
-            bottomAxis = bottomAxis(
-                valueFormatter = bottomAxisValueFormatter1
+            chartModelProducer = chartEntryModelProducer,
+            startAxis = startAxis(),
+            bottomAxis = bottomAxis(),
+            marker = rememberMarker(),
+        )
+
+        Spacer(modifier = Modifier.size(8.dp))
+
+        weekList.forEachIndexed { index, weekRange ->
+            Text(
+                "$index \t\t-> \t\t${weekRange.toFormattedDateRange()}",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
             )
-        )
-        Text("Thống kế ${recentWeeks.size} tuần gần đây")
-        Chart(
-            chart = lineChart,
-            chartModelProducer = chartEntryModelProducer2,
-            startAxis = startAxis(
-                maxLabelCount = 5
-            ),
-            bottomAxis = bottomAxis(
-                valueFormatter = bottomAxisValueFormatter2,
-                label = axisLabelComponent(textSize = 9.sp),
-                labelRotationDegrees = 15f
-            ),
-        )
+            Text("---", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        }
     }
+}
+fun String.toFormattedDateRange(): String {
+    val parts = this.split(" - ") // Tách chuỗi thành hai phần: phần đầu và phần cuối
+
+    val startDate = parts[0] // Lấy phần đầu (ngày bắt đầu)
+    val endDate = parts[1] // Lấy phần cuối (ngày kết thúc)
+
+    val formattedStartDate = startDate.split("-").reversed()
+        .joinToString("/") // Chuyển đổi ngày bắt đầu thành định dạng dd/mm
+    val formattedEndDate = endDate.split("-").reversed()
+        .joinToString("/") // Chuyển đổi ngày kết thúc thành định dạng dd/mm
+
+    return "$formattedStartDate - $formattedEndDate"
 }

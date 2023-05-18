@@ -95,16 +95,9 @@ fun HomeBody(
     selectedSubcategoryChipId: Int
 ) {
     Scaffold(
-        bottomBar = { BottomNavigator({}, navigateToStatScreen, HomeDestination.route) },
-        floatingActionButton = {
-            FloatingActionButton(onClick = { navigateToItemEntry() }) {
-                Icon(Icons.Filled.Add, null)
-            }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
-        isFloatingActionButtonDocked = true
-    ) {
-        Column {
+        bottomBar = { BottomNavigator({}, navigateToStatScreen, navigateToItemEntry, HomeDestination.route) }
+    ) {innerPadding ->
+        Column(Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
             /*
             Thanh tìm kiếm lịch sử giao dịch theo tên và nút thống kê
              */

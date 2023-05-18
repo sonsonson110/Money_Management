@@ -1,5 +1,6 @@
-package com.example.moneymanagement.database
+package com.example.moneymanagement.ui
 
+import android.annotation.SuppressLint
 import android.app.DatePickerDialog
 import android.widget.DatePicker
 import androidx.compose.foundation.clickable
@@ -11,20 +12,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.example.moneymanagement.R
-import com.example.moneymanagement.ui.entry.TransactionEntry
 import com.example.moneymanagement.ui.home.toFormattedDate
+import java.text.SimpleDateFormat
 import java.util.*
 
+@SuppressLint("SimpleDateFormat")
 @Composable
 fun DatePicker(
     transactionDate: String,
-    transactionEntry: TransactionEntry,
-    onValueChange: (TransactionEntry) -> Unit
+    onValueChange: (String) -> Unit,
+    limitPastDate: String? = null
 ) {
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
-    // Fetching current year, month and day
+    // lấy dữ liệu ngày tháng năm hiện tại
     val year = calendar[Calendar.YEAR]
     val month = calendar[Calendar.MONTH]
     val dayOfMonth = calendar[Calendar.DAY_OF_MONTH]
@@ -33,9 +35,13 @@ fun DatePicker(
         context,
         { _: DatePicker, selectedYear: Int, selectedMonth: Int, selectedDayOfMonth: Int ->
             val selectedDate = String.format("%d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDayOfMonth)
-            onValueChange(transactionEntry.copy(transactionDate = selectedDate))
+            onValueChange(selectedDate)
         }, year, month, dayOfMonth
     )
+    limitPastDate?.takeIf { it.isNotBlank() }?.let {
+        val date = SimpleDateFormat("yyyy-MM-dd").parse(it)
+        datePicker.datePicker.minDate = date!!.time
+    }
 
     TextField(
         value = transactionDate.toFormattedDate(),

@@ -28,19 +28,15 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
-import com.example.moneymanagement.R
-import com.example.moneymanagement.database.DatePicker
+import com.example.moneymanagement.ui.DatePicker
 import com.example.moneymanagement.database.model.CategoryWithSubcategories
 import com.example.moneymanagement.database.entity.Subcategory
 import com.example.moneymanagement.ui.navigation.NavigationDestination
-import com.example.moneymanagement.ui.theme.MoneyManagementTheme
 import kotlinx.coroutines.launch
 
 object TransactionEntryDestination : NavigationDestination {
@@ -128,8 +124,9 @@ fun TransactionEntryBody(
             )
             DatePicker(
                 transactionDate = it.transactionDate,
-                transactionEntry = transactionEntry,
-                onValueChange = onValueChange
+                onValueChange = { newDate ->
+                    onValueChange(transactionEntry.copy(transactionDate = newDate))
+                }
             )
 
             Text(
@@ -332,13 +329,6 @@ fun SubcategoryDropdownMenu(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun Preview() {
-    MoneyManagementTheme {
-
-    }
-}
 
 
 

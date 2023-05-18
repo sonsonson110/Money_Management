@@ -78,6 +78,7 @@ fun SetupNavGraph(
             StatScreen(
                 navigateToHomeScreen = { navController.navigate(HomeDestination.route) },
                 navigateToItemEntry = { navController.navigate(TransactionEntryDestination.route) },
+                navigateToItemDetail = { navController.navigate("${TransactionDetailDestination.route}/$it") }
             )
         }
     }
