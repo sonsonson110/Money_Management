@@ -34,6 +34,8 @@ import com.example.moneymanagement.ui.BottomNavigator
 import com.example.moneymanagement.ui.detail.groupAmount
 import com.example.moneymanagement.ui.navigation.NavigationDestination
 import com.example.moneymanagement.ui.theme.MoneyManagementTheme
+import java.text.SimpleDateFormat
+import java.util.*
 
 object HomeDestination : NavigationDestination {
     override val route = "home"
@@ -131,7 +133,13 @@ fun HomeBody(
             Mục hiển thị danh sách lịch sử giao dịch
              */
             TransactionsList(
-                transactionHomeList = transactionList.groupBy { it.transaction.transactionDate },
+                transactionHomeList = transactionList.groupBy {
+                    val transactionDate = SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.getDefault()
+                    ).parse(it.transaction.transactionDate)
+                    SimpleDateFormat("MM/yyyy", Locale.getDefault()).format(transactionDate!!)
+                },
                 onItemClick = { navigateToItemDetail(it.transactionId) },
             )
         }
@@ -148,7 +156,9 @@ fun SearchBar(
     TextField(
         value = searchText,
         onValueChange = onSearchFieldChange,
-        modifier = Modifier.fillMaxWidth().padding(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
         placeholder = { Text(text = "Tìm tên lịch sử giao dịch") },
         singleLine = true,
         trailingIcon = {
@@ -235,7 +245,7 @@ fun TransactionsList(
         transactionHomeList.forEach { (date, transactions) ->
             item {
                 Text(
-                    text = date,
+                    text = date.toFormattedMonth(),
                     fontSize = 23.sp,
                     color = Color.Black,
                     modifier = Modifier
@@ -300,7 +310,7 @@ fun TransactionsItem(
             ) {
                 transactionWithCateAndSubcategory.transaction.let {
                     Text(text = it.transactionName ?: "Chưa đề cập")
-                    Text(text = it.transactionDate)
+                    Text(text = it.transactionDate.toFormattedDate())
                 }
             }
         }
@@ -311,6 +321,26 @@ fun TransactionsItem(
             modifier = Modifier.align(Alignment.BottomEnd)
         )
     }
+}
+
+fun String.toFormattedMonth(): String {
+    if (this.isEmpty()) return ""
+
+    val inputFormat = SimpleDateFormat("MM/yyyy", Locale.getDefault())
+    val outputFormat = SimpleDateFormat("'Tháng' MM/yyyy", Locale("vi", "VN"))
+
+    val date = inputFormat.parse(this)
+    return outputFormat.format(date!!)
+}
+
+fun String.toFormattedDate(): String {
+    if (this.isEmpty()) return ""
+
+    val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val outputFormat = SimpleDateFormat("EEEE, 'ngày' dd/MM", Locale("vi", "VN"))
+
+    val date = inputFormat.parse(this)
+    return outputFormat.format(date!!)
 }
 
 @Composable

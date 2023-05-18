@@ -28,11 +28,13 @@ fun StatScreen(
 ) {
 
     val transactionMonthSumMap by viewModel.transactionMonthSumMap.collectAsState()
+    val transactionWeekSumMap by viewModel.transactionWeekSumMap.collectAsState()
 
     StatBody(
         navigateToHomeScreen,
         navigateToItemEntry,
-        transactionMonthSumMap = transactionMonthSumMap
+        transactionMonthSumMap,
+        transactionWeekSumMap
     )
 }
 
@@ -41,7 +43,8 @@ fun StatScreen(
 fun StatBody(
     navigateToHomeScreen: () -> Unit,
     navigateToItemEntry: () -> Unit,
-    transactionMonthSumMap: Map<String, Float>
+    transactionMonthSumMap: Map<String, Float>,
+    transactionWeekSumMap: Map<String, Float>
 ) {
     Scaffold(
         bottomBar = { BottomNavigator(navigateToHomeScreen, {}, StatDestination.route) },
@@ -58,7 +61,7 @@ fun StatBody(
 
             Text(text = "Thống kê chi tiêu")
 
-            CustomChart(transactionMonthSumMap)
+            CustomChart(transactionMonthSumMap, transactionWeekSumMap)
 
         }
     }

@@ -27,12 +27,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
+import com.example.moneymanagement.R
+import com.example.moneymanagement.database.DatePicker
 import com.example.moneymanagement.database.model.CategoryWithSubcategories
 import com.example.moneymanagement.database.entity.Subcategory
 import com.example.moneymanagement.ui.navigation.NavigationDestination
@@ -95,7 +99,9 @@ fun TransactionEntryBody(
 
     val focusManager = LocalFocusManager.current
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         transactionEntry.let {
@@ -120,15 +126,10 @@ fun TransactionEntryBody(
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth()
             )
-            TextField(
-                value = it.transactionDate,
-                onValueChange = { date -> onValueChange(transactionEntry.copy(transactionDate = date)) },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                )
+            DatePicker(
+                transactionDate = it.transactionDate,
+                transactionEntry = transactionEntry,
+                onValueChange = onValueChange
             )
 
             Text(
@@ -136,22 +137,40 @@ fun TransactionEntryBody(
                 textAlign = TextAlign.Start,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            var showError by remember { mutableStateOf(false) }
+            var errorMessage by remember { mutableStateOf("") }
             TextField(
-                value = it.transactionAmount.ifBlank { "" },
-                onValueChange = { amount ->
-                    onValueChange(
-                        transactionEntry.copy(
-                            transactionAmount = amount
-                        )
-                    )
+                value = it.transactionAmount,
+                onValueChange = { newValue: String ->
+                    onValueChange(transactionEntry.copy(transactionAmount = newValue))
+                    if (newValue.isEmpty() || isNumericAndPositive(newValue)) {
+                        showError = false
+                        errorMessage = ""
+                    } else {
+                        showError = true
+                        errorMessage = "Vui lòng nhập vào một số > 0"
+                    }
                 },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                isError = showError,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                )
+                ),
+                modifier = Modifier.fillMaxWidth()
             )
+
+            if (showError) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    style = MaterialTheme.typography.caption,
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
 
             Text(
                 text = "Ghi chú",

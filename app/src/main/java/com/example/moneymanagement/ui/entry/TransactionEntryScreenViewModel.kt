@@ -61,12 +61,17 @@ data class TransactionEntry(
     val category: Category = Category(-1, "", ""),
     val subcategory: Subcategory? = null,
 )
+fun isNumericAndPositive(input: String): Boolean {
+    val numFromString = input.toDoubleOrNull() ?: return false
+    return numFromString > 0
+}
 
 fun TransactionEntry.isValid(): Boolean {
     this.let {
         if (it.transactionAmount.isBlank()
             || it.transactionDate.isBlank()
             || it.category.categoryId < 1
+            || !isNumericAndPositive(transactionAmount)
         )
             return false
     }
