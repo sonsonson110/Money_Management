@@ -6,10 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneymanagement.database.model.CategoryWithSubcategories
-import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
-import com.example.moneymanagement.database.repository.CategoryWithSubcategoriesRepository
-import com.example.moneymanagement.database.repository.TransactionRepository
+import com.example.moneymanagement.data.model.CategoryWithSubcategories
+import com.example.moneymanagement.data.model.TransactionWithCateAndSubcategory
+import com.example.moneymanagement.data.repository.CategoryWithSubcategoriesRepository
+import com.example.moneymanagement.data.repository.TransactionRepository
 import com.example.moneymanagement.ui.entry.TransactionEntry
 import com.example.moneymanagement.ui.entry.TransactionEntryUiState
 import com.example.moneymanagement.ui.entry.isValid

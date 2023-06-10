@@ -2,30 +2,26 @@ package com.example.moneymanagement.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneymanagement.database.entity.Subcategory
-import com.example.moneymanagement.database.repository.CategoryWithSubcategoriesRepository
-import com.example.moneymanagement.database.repository.TransactionRepository
+import com.example.moneymanagement.data.entity.Subcategory
+import com.example.moneymanagement.data.repository.CategoryWithSubcategoriesRepository
+import com.example.moneymanagement.data.repository.TransactionRepository
 import kotlinx.coroutines.flow.*
 
 class HomeViewModel(
     transactionRepository: TransactionRepository,
     categoryWithSubcategoriesRepository: CategoryWithSubcategoriesRepository
 ) : ViewModel() {
-    /*
-    * Filtering
-    */
+
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
 
-    //truy cập category chip thông qua chỉ số của danh sách category chip
-    private val _selectedCategoryChipIndex = MutableStateFlow(-1)
-    val selectedCategoryChipIndex = _selectedCategoryChipIndex.asStateFlow()
+    private val _selectedCategoryChipId = MutableStateFlow(-1)
+    val selectedCategoryChipId = _selectedCategoryChipId.asStateFlow()
 
-    //truy cập subcategory chip thông qua id của nó
     private val _selectedSubcategoryChipId = MutableStateFlow(-1)
     val selectedSubcategoryChipId = _selectedSubcategoryChipId.asStateFlow()
 
-    val isCategoryChipSelected: StateFlow<Boolean> = _selectedCategoryChipIndex
+    val isCategoryChipSelected: StateFlow<Boolean> = _selectedCategoryChipId
         .map { index -> index >= 0 }
         .stateIn(
             scope = viewModelScope,
@@ -46,11 +42,11 @@ class HomeViewModel(
             else
                 list.filter { it.doesMatchSearchQuery(text) }
         }
-        .combine(_selectedCategoryChipIndex) { list, index ->
-            if (index == -1)
+        .combine(_selectedCategoryChipId) { list, id ->
+            if (id == -1)
                 list
             else
-                list.filter { it.category.categoryId == index.inc() }
+                list.filter { it.category.categoryId == id }
         }
         .combine(_selectedSubcategoryChipId) { list, id ->
             if (id == -1)
@@ -73,7 +69,7 @@ class HomeViewModel(
             )
 
     val subcategoryList: StateFlow<List<Subcategory>> = categoryWithSubCategoryList
-        .combine(_selectedCategoryChipIndex) { list, index ->
+        .combine(_selectedCategoryChipId) { list, index ->
             if (index != -1)
                 list[index].subcategories
             else
@@ -98,13 +94,14 @@ class HomeViewModel(
         _searchText.value = text
     }
 
-    fun onCategoryChipChange(index: Int) {
-        _selectedCategoryChipIndex.value = index
+    fun onCategoryChipChange(id: Int) {
+        _selectedCategoryChipId.value = id
     }
 
     fun onSubcategoryChipChange(id: Int) {
         _selectedSubcategoryChipId.value = id
     }
 }
+
 
 

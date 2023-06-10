@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
-import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
+import com.example.moneymanagement.data.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.ui.home.toFormattedDate
 import com.example.moneymanagement.ui.navigation.NavigationDestination
 import com.example.moneymanagement.ui.theme.MoneyManagementTheme

@@ -1,10 +1,9 @@
-package com.example.moneymanagement.database.dao
+package com.example.moneymanagement.data.dao
 
 import androidx.room.*
-import androidx.sqlite.db.SupportSQLiteQuery
-import com.example.moneymanagement.database.entity.*
-import com.example.moneymanagement.database.entity.Transaction
-import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
+import com.example.moneymanagement.data.entity.*
+import com.example.moneymanagement.data.entity.Transaction
+import com.example.moneymanagement.data.model.TransactionWithCateAndSubcategory
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 

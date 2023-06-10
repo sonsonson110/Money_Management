@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,14 +24,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
-import com.example.moneymanagement.database.entity.Subcategory
-import com.example.moneymanagement.database.entity.Transaction
-import com.example.moneymanagement.database.model.CategoryWithSubcategories
-import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
+import com.example.moneymanagement.data.entity.Subcategory
+import com.example.moneymanagement.data.entity.Transaction
+import com.example.moneymanagement.data.model.CategoryWithSubcategories
+import com.example.moneymanagement.data.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.ui.BottomNavigator
 import com.example.moneymanagement.ui.detail.groupAmount
 import com.example.moneymanagement.ui.navigation.NavigationDestination
 import com.example.moneymanagement.ui.theme.MoneyManagementTheme
+import com.example.moneymanagement.ui.theme.Typography
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -53,7 +52,7 @@ fun HomeScreen(
     val transactionList by viewModel.transactionList.collectAsState()
     val categoryWithSubCategoryList by viewModel.categoryWithSubCategoryList.collectAsState()
     val isCategoryChipSelected by viewModel.isCategoryChipSelected.collectAsState()
-    val selectedCategoryChipIndex by viewModel.selectedCategoryChipIndex.collectAsState()
+    val selectedCategoryChipId by viewModel.selectedCategoryChipId.collectAsState()
     val subcategoryList by viewModel.subcategoryList.collectAsState()
     val isSubcategoryChipSelected by viewModel.isSubcategoryChipSelected.collectAsState()
     val selectedSubcategoryChipId by viewModel.selectedSubcategoryChipId.collectAsState()
@@ -66,7 +65,7 @@ fun HomeScreen(
         searchText = searchText,
         onSearchFieldChange = viewModel::onSearchFieldChange,
         categoryWithSubCategoryList = categoryWithSubCategoryList,
-        selectedCategoryChipIndex = selectedCategoryChipIndex,
+        selectedCategoryChipId = selectedCategoryChipId,
         isCategoryChipSelected = isCategoryChipSelected,
         onCategoryChipChange = viewModel::onCategoryChipChange,
         subcategoryList = subcategoryList,
@@ -86,7 +85,7 @@ fun HomeBody(
     searchText: String,
     onSearchFieldChange: (String) -> Unit,
     categoryWithSubCategoryList: List<CategoryWithSubcategories>,
-    selectedCategoryChipIndex: Int,
+    selectedCategoryChipId: Int,
     isCategoryChipSelected: Boolean,
     onCategoryChipChange: (Int) -> Unit,
     subcategoryList: List<Subcategory>,
@@ -111,7 +110,7 @@ fun HomeBody(
             Text("Filter")
             CategoryChips(
                 categoryWithSubCategoryList,
-                selectedCategoryChipIndex,
+                selectedCategoryChipId,
                 isCategoryChipSelected,
                 onCategoryChipChange,
                 subcategoryList,
@@ -127,11 +126,23 @@ fun HomeBody(
              */
             TransactionsList(
                 transactionHomeList = transactionList.groupBy {
-                    val transactionDate = SimpleDateFormat(
-                        "yyyy-MM-dd",
-                        Locale.getDefault()
-                    ).parse(it.transaction.transactionDate)
+                    val transactionDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.transaction.transactionDate)
                     SimpleDateFormat("MM/yyyy", Locale.getDefault()).format(transactionDate!!)
+                }.mapValues { (_, transactions) ->
+                    val finalList = mutableListOf<TransactionWithCateAndSubcategory>()
+                    var i = 0
+                    while (i < transactions.size) {
+                        val currentTransaction = transactions[i]
+                        var endIndex = i
+                        val transactionsWithSameDate = mutableListOf(currentTransaction)
+                        while(endIndex + 1 < transactions.size && transactions[endIndex + 1].transaction.transactionDate == currentTransaction.transaction.transactionDate) {
+                            transactionsWithSameDate.add(transactions[++endIndex])
+                        }
+                        transactionsWithSameDate.sortByDescending { it.transaction.transactionId }
+                        finalList.addAll(transactionsWithSameDate)
+                        i = endIndex + 1
+                    }
+                    finalList
                 },
                 onItemClick = { navigateToItemDetail(it.transactionId) },
             )
@@ -171,7 +182,7 @@ fun SearchBar(
 @Composable
 fun CategoryChips(
     categoryWithSubCategoryList: List<CategoryWithSubcategories>,
-    selectedCategoryChipIndex: Int,
+    selectedCategoryChipId: Int,
     isCategoryChipSelected: Boolean,
     onCategoryChipChange: (Int) -> Unit,
     subcategoryList: List<Subcategory>,
@@ -180,19 +191,20 @@ fun CategoryChips(
     selectedSubcategoryChipId: Int
 ) {
     LazyRow {
-        itemsIndexed(categoryWithSubCategoryList) { index, item ->
+        items(categoryWithSubCategoryList) { item ->
+            val categoryId = item.category.categoryId
             Chip(
                 onClick = {
                     if (
                         isCategoryChipSelected &&
-                        selectedCategoryChipIndex == index
+                        selectedCategoryChipId == categoryId
                     )
                         onCategoryChipChange(-1)
                     else
-                        onCategoryChipChange(index)
+                        onCategoryChipChange(categoryId)
                     onSubcategoryChipChange(-1)
                 },
-                colors = if (selectedCategoryChipIndex.inc() == item.category.categoryId)
+                colors = if (selectedCategoryChipId == item.category.categoryId)
                     ChipDefaults.chipColors(backgroundColor = Color(0xFF1DB954))
                 else
                     ChipDefaults.chipColors() //default
@@ -203,7 +215,7 @@ fun CategoryChips(
         }
     }
 
-    if (selectedCategoryChipIndex == -1) return
+    if (selectedCategoryChipId == -1) return
     /*
     Hiển thị chip mở rộng nếu thể loại cha đã được chọn
      */
@@ -311,7 +323,8 @@ fun TransactionsItem(
         Text(
             text = transactionWithCateAndSubcategory.transaction.transactionAmount.toString()
                 .groupAmount() + "đ",
-            modifier = Modifier.align(Alignment.BottomEnd)
+            modifier = Modifier.align(Alignment.BottomEnd),
+            style = Typography.body1
         )
     }
 }

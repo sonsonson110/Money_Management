@@ -1,8 +1,8 @@
-package com.example.moneymanagement.database.repository
+package com.example.moneymanagement.data.repository
 
-import com.example.moneymanagement.database.dao.TransactionDao
-import com.example.moneymanagement.database.entity.Transaction
-import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
+import com.example.moneymanagement.data.dao.TransactionDao
+import com.example.moneymanagement.data.entity.Transaction
+import com.example.moneymanagement.data.model.TransactionWithCateAndSubcategory
 import kotlinx.coroutines.flow.Flow
 
 class TransactionRepository(private val transactionDao: TransactionDao) {

@@ -1,7 +1,7 @@
-package com.example.moneymanagement.database.repository
+package com.example.moneymanagement.data.repository
 
-import com.example.moneymanagement.database.dao.CategoryWithSubcategoriesDao
-import com.example.moneymanagement.database.model.CategoryWithSubcategories
+import com.example.moneymanagement.data.dao.CategoryWithSubcategoriesDao
+import com.example.moneymanagement.data.model.CategoryWithSubcategories
 import kotlinx.coroutines.flow.Flow
 
 class CategoryWithSubcategoriesRepository(categoryWithSubcategoriesDao: CategoryWithSubcategoriesDao) {

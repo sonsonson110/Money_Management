@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
 import com.example.moneymanagement.ui.DatePicker
-import com.example.moneymanagement.database.model.CategoryWithSubcategories
-import com.example.moneymanagement.database.entity.Subcategory
+import com.example.moneymanagement.data.model.CategoryWithSubcategories
+import com.example.moneymanagement.data.entity.Subcategory
 import com.example.moneymanagement.ui.navigation.NavigationDestination
 import kotlinx.coroutines.launch
 

@@ -4,7 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneymanagement.database.repository.TransactionRepository
+import com.example.moneymanagement.data.repository.TransactionRepository
 import com.patrykandpatrick.vico.core.extension.sumByFloat
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate

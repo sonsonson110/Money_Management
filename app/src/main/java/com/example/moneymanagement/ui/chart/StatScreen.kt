@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
 import com.example.moneymanagement.ui.DatePicker
-import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
+import com.example.moneymanagement.data.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.ui.BottomNavigator
 import com.example.moneymanagement.ui.detail.groupAmount
 import com.example.moneymanagement.ui.home.TransactionsItem

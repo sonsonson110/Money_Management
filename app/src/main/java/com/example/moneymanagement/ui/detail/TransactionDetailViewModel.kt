@@ -3,9 +3,9 @@ package com.example.moneymanagement.ui.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moneymanagement.database.entity.Transaction
-import com.example.moneymanagement.database.model.TransactionWithCateAndSubcategory
-import com.example.moneymanagement.database.repository.TransactionRepository
+import com.example.moneymanagement.data.entity.Transaction
+import com.example.moneymanagement.data.model.TransactionWithCateAndSubcategory
+import com.example.moneymanagement.data.repository.TransactionRepository
 import kotlinx.coroutines.flow.*
 
 class TransactionDetailViewModel(

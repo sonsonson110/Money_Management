@@ -1,8 +1,8 @@
-package com.example.moneymanagement.database
+package com.example.moneymanagement.data
 
 import android.content.Context
-import com.example.moneymanagement.database.repository.CategoryWithSubcategoriesRepository
-import com.example.moneymanagement.database.repository.TransactionRepository
+import com.example.moneymanagement.data.repository.CategoryWithSubcategoriesRepository
+import com.example.moneymanagement.data.repository.TransactionRepository
 
 interface AppContainer {
     val transactionRepository: TransactionRepository

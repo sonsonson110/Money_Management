@@ -1,12 +1,12 @@
-package com.example.moneymanagement.database
+package com.example.moneymanagement.data
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.moneymanagement.database.dao.CategoryWithSubcategoriesDao
-import com.example.moneymanagement.database.dao.TransactionDao
-import com.example.moneymanagement.database.entity.*
+import com.example.moneymanagement.data.dao.CategoryWithSubcategoriesDao
+import com.example.moneymanagement.data.dao.TransactionDao
+import com.example.moneymanagement.data.entity.*
 
 @Database(
     entities = [Transaction::class, Category::class, Subcategory::class],
