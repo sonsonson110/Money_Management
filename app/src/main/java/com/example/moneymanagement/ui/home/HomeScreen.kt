@@ -24,15 +24,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
+import com.example.moneymanagement.data.entity.Category
 import com.example.moneymanagement.data.entity.Subcategory
 import com.example.moneymanagement.data.entity.Transaction
-import com.example.moneymanagement.data.model.CategoryWithSubcategories
 import com.example.moneymanagement.data.model.TransactionWithCateAndSubcategory
 import com.example.moneymanagement.ui.BottomNavigator
 import com.example.moneymanagement.ui.detail.groupAmount
 import com.example.moneymanagement.ui.navigation.NavigationDestination
-import com.example.moneymanagement.ui.theme.MoneyManagementTheme
-import com.example.moneymanagement.ui.theme.Typography
+import com.example.moneymanagement.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -49,29 +48,34 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val searchText by viewModel.searchText.collectAsState()
-    val transactionList by viewModel.transactionList.collectAsState()
-    val categoryWithSubCategoryList by viewModel.categoryWithSubCategoryList.collectAsState()
+
+    val categoryList by viewModel.categoryList.collectAsState()
     val isCategoryChipSelected by viewModel.isCategoryChipSelected.collectAsState()
     val selectedCategoryChipId by viewModel.selectedCategoryChipId.collectAsState()
     val subcategoryList by viewModel.subcategoryList.collectAsState()
     val isSubcategoryChipSelected by viewModel.isSubcategoryChipSelected.collectAsState()
     val selectedSubcategoryChipId by viewModel.selectedSubcategoryChipId.collectAsState()
 
+    val transactionsGroupByMonthOfYear by viewModel.transactionsGroupByMonthOfYear.collectAsState()
+
     HomeBody(
         navigateToStatScreen = navigateToStatScreen,
         navigateToItemEntry = navigateToItemEntry,
         navigateToItemDetail = navigateToItemDetail,
-        transactionList = transactionList,
+
         searchText = searchText,
         onSearchFieldChange = viewModel::onSearchFieldChange,
-        categoryWithSubCategoryList = categoryWithSubCategoryList,
+
+        categoryList = categoryList,
         selectedCategoryChipId = selectedCategoryChipId,
         isCategoryChipSelected = isCategoryChipSelected,
         onCategoryChipChange = viewModel::onCategoryChipChange,
         subcategoryList = subcategoryList,
         isSubcategoryChipSelected = isSubcategoryChipSelected,
         onSubcategoryChipChange = viewModel::onSubcategoryChipChange,
-        selectedSubcategoryChipId = selectedSubcategoryChipId
+        selectedSubcategoryChipId = selectedSubcategoryChipId,
+
+        transactionsGroupByMonthOfYear = transactionsGroupByMonthOfYear
     )
 }
 
@@ -81,21 +85,31 @@ fun HomeBody(
     navigateToStatScreen: () -> Unit,
     navigateToItemEntry: () -> Unit,
     navigateToItemDetail: (Int) -> Unit,
-    transactionList: List<TransactionWithCateAndSubcategory>,
+
     searchText: String,
     onSearchFieldChange: (String) -> Unit,
-    categoryWithSubCategoryList: List<CategoryWithSubcategories>,
+
+    categoryList: List<Category>,
     selectedCategoryChipId: Int,
     isCategoryChipSelected: Boolean,
     onCategoryChipChange: (Int) -> Unit,
     subcategoryList: List<Subcategory>,
     isSubcategoryChipSelected: Boolean,
     onSubcategoryChipChange: (Int) -> Unit,
-    selectedSubcategoryChipId: Int
+    selectedSubcategoryChipId: Int,
+
+    transactionsGroupByMonthOfYear: Map<String, List<TransactionWithCateAndSubcategory>>
 ) {
     Scaffold(
-        bottomBar = { BottomNavigator({}, navigateToStatScreen, navigateToItemEntry, HomeDestination.route) }
-    ) {innerPadding ->
+        bottomBar = {
+            BottomNavigator(
+                {},
+                navigateToStatScreen,
+                navigateToItemEntry,
+                HomeDestination.route
+            )
+        }
+    ) { innerPadding ->
         Column(Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
             /*
             Thanh tìm kiếm lịch sử giao dịch theo tên và nút thống kê
@@ -109,7 +123,7 @@ fun HomeBody(
              */
             Text("Filter")
             CategoryChips(
-                categoryWithSubCategoryList,
+                categoryList,
                 selectedCategoryChipId,
                 isCategoryChipSelected,
                 onCategoryChipChange,
@@ -125,25 +139,7 @@ fun HomeBody(
             Mục hiển thị danh sách lịch sử giao dịch
              */
             TransactionsList(
-                transactionHomeList = transactionList.groupBy {
-                    val transactionDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(it.transaction.transactionDate)
-                    SimpleDateFormat("MM/yyyy", Locale.getDefault()).format(transactionDate!!)
-                }.mapValues { (_, transactions) ->
-                    val finalList = mutableListOf<TransactionWithCateAndSubcategory>()
-                    var i = 0
-                    while (i < transactions.size) {
-                        val currentTransaction = transactions[i]
-                        var endIndex = i
-                        val transactionsWithSameDate = mutableListOf(currentTransaction)
-                        while(endIndex + 1 < transactions.size && transactions[endIndex + 1].transaction.transactionDate == currentTransaction.transaction.transactionDate) {
-                            transactionsWithSameDate.add(transactions[++endIndex])
-                        }
-                        transactionsWithSameDate.sortByDescending { it.transaction.transactionId }
-                        finalList.addAll(transactionsWithSameDate)
-                        i = endIndex + 1
-                    }
-                    finalList
-                },
+                transactionsGroupByMonthOfYear = transactionsGroupByMonthOfYear,
                 onItemClick = { navigateToItemDetail(it.transactionId) },
             )
         }
@@ -181,7 +177,7 @@ fun SearchBar(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CategoryChips(
-    categoryWithSubCategoryList: List<CategoryWithSubcategories>,
+    categoryList: List<Category>,
     selectedCategoryChipId: Int,
     isCategoryChipSelected: Boolean,
     onCategoryChipChange: (Int) -> Unit,
@@ -191,8 +187,8 @@ fun CategoryChips(
     selectedSubcategoryChipId: Int
 ) {
     LazyRow {
-        items(categoryWithSubCategoryList) { item ->
-            val categoryId = item.category.categoryId
+        items(categoryList) { item ->
+            val categoryId = item.categoryId
             Chip(
                 onClick = {
                     if (
@@ -204,12 +200,12 @@ fun CategoryChips(
                         onCategoryChipChange(categoryId)
                     onSubcategoryChipChange(-1)
                 },
-                colors = if (selectedCategoryChipId == item.category.categoryId)
-                    ChipDefaults.chipColors(backgroundColor = Color(0xFF1DB954))
+                colors = if (selectedCategoryChipId == item.categoryId)
+                    ChipDefaults.chipColors(backgroundColor = limeGreen)
                 else
                     ChipDefaults.chipColors() //default
             ) {
-                Text(text = item.category.categoryName)
+                Text(text = item.categoryName)
             }
             Spacer(modifier = Modifier.width(4.dp))
         }
@@ -229,7 +225,7 @@ fun CategoryChips(
                         onSubcategoryChipChange(item.subcategoryId)
                 },
                 colors = if (selectedSubcategoryChipId == item.subcategoryId)
-                    ChipDefaults.chipColors(backgroundColor = Color(0xFF1DB954))
+                    ChipDefaults.chipColors(backgroundColor = limeGreen)
                 else
                     ChipDefaults.chipColors() //default
             ) {
@@ -242,20 +238,20 @@ fun CategoryChips(
 
 @Composable
 fun TransactionsList(
-    transactionHomeList: Map<String, List<TransactionWithCateAndSubcategory>>,
+    transactionsGroupByMonthOfYear: Map<String, List<TransactionWithCateAndSubcategory>>,
     onItemClick: (Transaction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(modifier = modifier.fillMaxWidth()) {
-        transactionHomeList.forEach { (date, transactions) ->
+        transactionsGroupByMonthOfYear.forEach { (_, transactions) ->
             item {
                 Text(
-                    text = date.toFormattedMonth(),
+                    text = transactions.first().transaction.transactionDate.toDisplayMonth(),
                     fontSize = 23.sp,
                     color = Color.Black,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(Color(212, 175, 55))
+                        .background(goldenrod)
                         .padding(vertical = 4.dp)
                 )
                 Column(modifier = modifier.fillMaxWidth()) {
@@ -285,13 +281,11 @@ fun TransactionsItem(
         //add padding before setting size -> margin
         //add padding after setting size -> padding
         modifier = Modifier
-            .background(color = if (index % 2 == 0) Color(18, 18, 18) else Color(31, 27, 36))
+            .background(color = if (index % 2 == 0) jetBlack else darkCharcoal)
             .padding(8.dp)
             .clickable { onItemClick(transactionWithCateAndSubcategory.transaction) },
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
             if (transactionWithCateAndSubcategory.category.categoryIconName != "") {
                 Icon(
                     painter = painterResource(
@@ -309,13 +303,10 @@ fun TransactionsItem(
                 )
             }
 
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 transactionWithCateAndSubcategory.transaction.let {
                     Text(text = it.transactionName ?: "Chưa đề cập")
-                    Text(text = it.transactionDate.toFormattedDate())
+                    Text(text = it.transactionDate.toDisplayDate())
                 }
             }
         }
@@ -323,60 +314,51 @@ fun TransactionsItem(
         Text(
             text = transactionWithCateAndSubcategory.transaction.transactionAmount.toString()
                 .groupAmount() + "đ",
-            modifier = Modifier.align(Alignment.BottomEnd),
-            style = Typography.body1
+            modifier = Modifier.align(Alignment.BottomEnd)
         )
     }
 }
 
-fun String.toFormattedMonth(): String {
-    if (this.isEmpty()) return ""
-
-    val inputFormat = SimpleDateFormat("MM/yyyy", Locale.getDefault())
-    val outputFormat = SimpleDateFormat("'Tháng' MM/yyyy", Locale("vi", "VN"))
-
-    val date = inputFormat.parse(this)
-    return outputFormat.format(date!!)
+fun String.toDisplayMonth(): String {
+    val date = STRING_DATE_FORMATTER.parse(this)
+    return DISPLAY_MONTH_FORMATTER.format(date!!)
 }
 
-fun String.toFormattedDate(): String {
+fun String.toDisplayDate(): String {
     if (this.isEmpty()) return ""
-
-    val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-    val outputFormat = SimpleDateFormat("EEEE, 'ngày' dd/MM", Locale("vi", "VN"))
-
-    val date = inputFormat.parse(this)
-    return outputFormat.format(date!!)
+    val date = STRING_DATE_FORMATTER.parse(this)
+    return DISPLAY_DATE_FORMATTER.format(date!!)
 }
 
 @Composable
 @Preview
 fun PreviewTransactionList() {
-    MoneyManagementTheme {
+    MoneyManagementTheme(darkTheme = true) {
         TransactionsList(
-            transactionHomeList = sampleData.groupBy { it.transaction.transactionDate },
+            transactionsGroupByMonthOfYear = sampleData,
             onItemClick = {}
         )
     }
 }
 
-val sampleData = listOf(
-    TransactionWithCateAndSubcategory(
-        transaction = Transaction(0, "", 1.0, "2002-10-14", "", 1, 1)
-    ),
-    TransactionWithCateAndSubcategory(
-        transaction = Transaction(1, "", 1.0, "2002-10-14", "", 1, 1)
-    ),
-    TransactionWithCateAndSubcategory(
-        transaction = Transaction(2, "", 1.0, "2002-10-13", "", 1, 1)
-    ),
-    TransactionWithCateAndSubcategory(
-        transaction = Transaction(3, "", 1.0, "2002-10-12", "", 1, 1)
-    ),
-    TransactionWithCateAndSubcategory(
-        transaction = Transaction(4, "", 1.0, "2002-10-12", "", 1, 1)
-    ),
-    TransactionWithCateAndSubcategory(
-        transaction = Transaction(5, "", 1.0, "2002-10-11", "", 1, 1)
-    ),
+val sampleData = mapOf(
+    Pair(
+        first = "2023-06",
+        second = listOf(
+            TransactionWithCateAndSubcategory(
+                Transaction(0, "Nhậu", 200000.0, "2023-06-03", null, 1, 1),
+                Category(1,"Ăn","category_icon_1"),
+                Subcategory(1,"ăn",1)
+            ),
+            TransactionWithCateAndSubcategory(
+                Transaction(0, "nhẹt", 200000.0, "2023-06-05", null, 1, 1),
+                Category(1,"Ăn","category_icon_1"),
+                Subcategory(1,"ăn",1)
+            )
+        )
+    )
 )
+
+val STRING_DATE_FORMATTER = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+val DISPLAY_MONTH_FORMATTER = SimpleDateFormat("'Tháng' MM/yyyy", Locale("vi", "VN"))
+val DISPLAY_DATE_FORMATTER = SimpleDateFormat("EEEE, 'ngày' dd/MM", Locale("vi", "VN"))

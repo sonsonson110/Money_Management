@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moneymanagement.AppViewModelProvider
 import com.example.moneymanagement.data.model.TransactionWithCateAndSubcategory
-import com.example.moneymanagement.ui.home.toFormattedDate
+import com.example.moneymanagement.ui.home.toDisplayDate
 import com.example.moneymanagement.ui.navigation.NavigationDestination
 import com.example.moneymanagement.ui.theme.MoneyManagementTheme
 import kotlinx.coroutines.launch
@@ -101,7 +101,7 @@ fun DetailCards(transactionWithCateAndSubcategory: TransactionWithCateAndSubcate
                 )
 
                 //Smaller transaction details
-                DetailRow(title = "Thời gian", content = it.transaction.transactionDate.toFormattedDate())
+                DetailRow(title = "Thời gian", content = it.transaction.transactionDate.toDisplayDate())
                 it.transaction.transactionNote?.let { date ->
                     DetailRow(
                         title = "Ghi chú",

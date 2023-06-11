@@ -41,5 +41,11 @@ data class Transaction(
     val categoryId: Int,
     @ColumnInfo("subcategory_id")
     val subcategoryId: Int?
-)
+) {
+    fun doesMatchSearchQuery(query: String): Boolean {
+        if (transactionName == null)
+            return "Chưa đề cập".contains(query, ignoreCase = true)
+        return transactionName.contains(query, ignoreCase = true)
+    }
+}
 

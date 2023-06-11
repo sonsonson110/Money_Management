@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.example.moneymanagement.R
-import com.example.moneymanagement.ui.home.toFormattedDate
+import com.example.moneymanagement.ui.home.toDisplayDate
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -44,7 +44,7 @@ fun DatePicker(
     }
 
     TextField(
-        value = transactionDate.toFormattedDate(),
+        value = transactionDate.toDisplayDate(),
         onValueChange = {},
         modifier = Modifier.fillMaxWidth(),
         readOnly = true,

@@ -16,12 +16,7 @@ class ChartViewModel(
     transactionRepository: TransactionRepository
 ) : ViewModel() {
     //toàn bộ lịch sử giao dịch
-    private val transactionList = transactionRepository.loadTransactionHomeList().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000L),
-        initialValue = emptyList()
-    )
-
+    private val transactionList = transactionRepository.loadTransactionHomeList()
     private val selectedStartDate = MutableStateFlow("")
     private val selectedEndDate = MutableStateFlow("")
 
@@ -63,7 +58,7 @@ class ChartViewModel(
 
                 val startOfWeek = startDate.plusWeeks(weekNumber)
                 val endOfWeek = startOfWeek.plusDays(6)
-                val weekString = "$startOfWeek - $endOfWeek"
+                val weekString = "${startOfWeek.toDayAndMonthString()} - ${endOfWeek.toDayAndMonthString()}"
 
                 weekString
             }.mapValues { (_,transactions) ->
@@ -85,7 +80,13 @@ class ChartViewModel(
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
+fun LocalDate.toDayAndMonthString(): String {
+    return "${this.dayOfMonth}/${this.monthValue}"
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
 fun String.toLocalDate(): LocalDate = LocalDate.parse(this)
 
 @RequiresApi(Build.VERSION_CODES.O)
 private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
